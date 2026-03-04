@@ -9,6 +9,7 @@ import Semester4 from "./pages/platform/Semester4";
 import Semester5 from "./pages/platform/Semester5";
 import SemesterComingSoon from "./pages/platform/SemesterComingSoon";
 import Documentation from "./pages/platform/Documentation";
+import Conventions from "./pages/platform/Conventions";
 import { useAuth } from "./context/useAuth";
 
 function ProtectedRoute({ children }) {
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="semestre/5" element={<Semester5 />} />
         <Route path="semestre/:id" element={<SemesterComingSoon />} />
         <Route path="documentacion" element={<Documentation />} />
+        <Route path="convenciones" element={<Conventions />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

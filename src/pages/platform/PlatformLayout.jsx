@@ -107,6 +107,27 @@ export default function PlatformLayout() {
                                    <p className="text-[11px] text-slate-500 truncate">README · Code Review</p>
                               </div>
                          </NavLink>
+                         <NavLink
+                              to="/plataforma/convenciones"
+                              onClick={() => { if (window.innerWidth < 1024) setOpen(false); }}
+                              className={({ isActive }) =>
+                                   `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 border ${isActive
+                                        ? "bg-teal-600/20 border-teal-600/40 text-white"
+                                        : "border-transparent text-slate-400 hover:bg-slate-800/60 hover:text-white"
+                                   }`
+                              }
+                         >
+                              <span className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center shrink-0">
+                                   <svg className="w-4 h-4 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m6 10V7M4 12h16" />
+                                   </svg>
+                              </span>
+                              <div className="min-w-0">
+                                   <p className="text-sm font-semibold leading-tight">Convenciones</p>
+                                   <p className="text-[11px] text-slate-500 truncate">Base de Datos · Comentarios</p>
+                              </div>
+                         </NavLink>
                     </div>
                </nav>
 
