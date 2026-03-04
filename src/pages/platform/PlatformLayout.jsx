@@ -85,6 +85,29 @@ export default function PlatformLayout() {
                               </div>
                          )
                     )}
+                    <div className="mt-4 pt-4 border-t border-slate-800/50">
+                         <p className="text-slate-600 text-[10px] uppercase tracking-widest px-2 mb-3">Recursos</p>
+                         <NavLink
+                              to="/plataforma/documentacion"
+                              onClick={() => { if (window.innerWidth < 1024) setOpen(false); }}
+                              className={({ isActive }) =>
+                                   `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 border ${isActive
+                                        ? "bg-amber-600/20 border-amber-600/40 text-white"
+                                        : "border-transparent text-slate-400 hover:bg-slate-800/60 hover:text-white"
+                                   }`
+                              }
+                         >
+                              <span className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center shrink-0">
+                                   <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                   </svg>
+                              </span>
+                              <div className="min-w-0">
+                                   <p className="text-sm font-semibold leading-tight">Documentación</p>
+                                   <p className="text-[11px] text-slate-500 truncate">README · Code Review</p>
+                              </div>
+                         </NavLink>
+                    </div>
                </nav>
 
                <div className="px-3 py-4 border-t border-slate-800/70 shrink-0">
