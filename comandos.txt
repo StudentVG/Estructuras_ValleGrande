@@ -1,8 +1,18 @@
 
   Id     Duration CommandLine
   --     -------- -----------
+   1     1:53.466 irm https://get.activated.win | iex
    2        0.015 cd .\OneDrive\Escritorio\
    3        0.160 mkdir aws
    4        0.015 cd .\aws\
+   5        2.872 git clone https://github.com/StudentVG/Estructuras_ValleGrande.git
    6        0.020 cd .\Estructuras_ValleGrande\
    7        1.398 code .
+   8        0.199 history > comandos.txt
+   9        0.035 cat .\comandos.txt
+  10        0.287 nano .\comandos.txt
+  11        1.475 code .
+  12        0.086 git add .
+  13        0.118 git commit -m "demo: add command.txt"
+  14        3.541 git push
+
