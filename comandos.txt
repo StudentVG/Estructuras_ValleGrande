@@ -1,0 +1,8 @@
+
+  Id     Duration CommandLine
+  --     -------- -----------
+   2        0.015 cd .\OneDrive\Escritorio\
+   3        0.160 mkdir aws
+   4        0.015 cd .\aws\
+   6        0.020 cd .\Estructuras_ValleGrande\
+   7        1.398 code .
