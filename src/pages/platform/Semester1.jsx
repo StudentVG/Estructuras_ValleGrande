@@ -55,6 +55,12 @@ const GAS_TOOLS = [
      },
 ];
 
+const TIPS = [
+     { icon: "◈", title: "Documenta cada función en Apps Script", desc: "Usa comentarios JSDoc en cada función (@param, @return) para que el equipo entienda el flujo sin leer todo el código." },
+     { icon: "⊞", title: "Versiona tus scripts", desc: "Guarda copias en Git aunque el proyecto viva en Apps Script — exporta el código con clasp para no perder cambios." },
+     { icon: "⟳", title: "Valida antes de automatizar", desc: "Prueba la lógica con datos de ejemplo pequeños antes de correrla sobre la hoja de cálculo completa en producción." },
+     { icon: "◎", title: "Comunica cambios de proceso", desc: "Si tu automatización modifica un flujo que otros usan, avisa antes de desplegar; un Form o Sheet roto afecta a todo el equipo." },
+];
 
 export default function Semester1() {
      const { user } = useAuth();
@@ -135,6 +141,23 @@ export default function Semester1() {
                     </div>
                </motion.div>
 
+               <motion.div custom={3} variants={fadeUp} initial="hidden" animate="show">
+                    <div className="flex items-center gap-2 mb-5">
+                         <div className="w-1 h-5 bg-amber-500 rounded-full" />
+                         <h2 className="text-white font-bold text-lg">Consejos del semestre</h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                         {TIPS.map((t, i) => (
+                              <div key={i} className="flex gap-3 bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+                                   <span className="shrink-0 text-amber-400 text-sm mt-0.5">{t.icon}</span>
+                                   <div className="min-w-0">
+                                        <p className="text-slate-200 font-semibold text-sm leading-tight">{t.title}</p>
+                                        <p className="text-slate-500 text-xs mt-1 leading-relaxed">{t.desc}</p>
+                                   </div>
+                              </div>
+                         ))}
+                    </div>
+               </motion.div>
 
           </div>
      );

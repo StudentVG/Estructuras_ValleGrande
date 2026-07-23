@@ -164,6 +164,12 @@ const COMMITS = [
 ];
 
 
+const TIPS = [
+     { icon: "☕", title: "No mezcles capas", desc: "La vista (Swing) nunca debe hablar directo con el DAO. Siempre pasa por controller → service para mantener el bajo acoplamiento." },
+     { icon: "🗄", title: "Cierra siempre las conexiones", desc: "Usa try-with-resources con Connection, PreparedStatement y ResultSet para evitar fugas de conexiones a MySQL." },
+     { icon: "🐍", title: "Un blueprint por módulo", desc: "En Flask, agrupa las rutas relacionadas en su propio blueprint (clientes, productos...) en vez de un único archivo de rutas gigante." },
+     { icon: "🎨", title: "Tailwind por CDN solo para prácticas", desc: "El CDN es rápido para el semestre, pero en un proyecto real conviene instalar Tailwind vía npm para purgar CSS no usado." },
+];
 
 function FileIcon({ name, accentColor }) {
      const clean = name.replace(/\s*←.*$/, '').trim();
@@ -532,6 +538,24 @@ export default function Semester2() {
                                    <div className="min-w-0">
                                         <p className="text-slate-300 text-sm font-medium leading-tight">{c.desc}</p>
                                         <p className="text-slate-600 text-xs mt-1 font-mono truncate">{c.ex}</p>
+                                   </div>
+                              </div>
+                         ))}
+                    </div>
+               </motion.div>
+
+               <motion.div custom={6} variants={fadeUp} initial="hidden" animate="show">
+                    <div className="flex items-center gap-3 mb-5">
+                         <div className="w-1 h-5 bg-amber-500 rounded-full" />
+                         <h2 className="text-white font-bold text-lg">Consejos del semestre</h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                         {TIPS.map((t, i) => (
+                              <div key={i} className="flex gap-3 bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+                                   <span className="shrink-0 text-amber-400 text-sm mt-0.5">{t.icon}</span>
+                                   <div className="min-w-0">
+                                        <p className="text-slate-200 font-semibold text-sm leading-tight">{t.title}</p>
+                                        <p className="text-slate-500 text-xs mt-1 leading-relaxed">{t.desc}</p>
                                    </div>
                               </div>
                          ))}

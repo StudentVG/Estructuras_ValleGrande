@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 
 const SEMESTERS = [
@@ -13,7 +13,13 @@ const SEMESTERS = [
 export default function PlatformLayout() {
      const { user, logout } = useAuth();
      const navigate = useNavigate();
+     const location = useLocation();
      const [open, setOpen] = useState(true);
+     const mainRef = useRef(null);
+
+     useEffect(() => {
+          mainRef.current?.scrollTo(0, 0);
+     }, [location.pathname]);
 
      function handleLogout() {
           logout();
@@ -175,7 +181,7 @@ export default function PlatformLayout() {
                          <span className="text-slate-600 text-sm truncate">Valle Grande — Plataforma</span>
                     </header>
 
-                    <main className="flex-1 overflow-y-auto">
+                    <main ref={mainRef} className="flex-1 overflow-y-auto">
                          <Outlet />
                     </main>
                </div>
