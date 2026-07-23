@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 
@@ -17,8 +17,11 @@ export default function PlatformLayout() {
      const [open, setOpen] = useState(true);
      const mainRef = useRef(null);
 
-     useEffect(() => {
-          mainRef.current?.scrollTo(0, 0);
+     useLayoutEffect(() => {
+          if ("scrollRestoration" in window.history) {
+               window.history.scrollRestoration = "manual";
+          }
+          mainRef.current?.scrollTo({ top: 0, left: 0, behavior: "instant" });
      }, [location.pathname]);
 
      function handleLogout() {

@@ -1,13 +1,18 @@
 import { createContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { auth, githubProvider } from "../firebase";
 
 const AuthContext = createContext(null);
 export default AuthContext;
 
+const BUILD_ID = import.meta.env.VITE_BUILD_ID || "dev";
+const BUILD_ID_KEY = "app_build_id";
+
 export function AuthProvider({ children }) {
      const [user, setUser] = useState(undefined);
      const [error, setError] = useState(null);
+     const navigate = useNavigate();
 
      useEffect(() => {
           const unsub = onAuthStateChanged(auth, (firebaseUser) => {
@@ -15,6 +20,18 @@ export function AuthProvider({ children }) {
           });
           return unsub;
      }, []);
+
+     useEffect(() => {
+          const storedBuildId = localStorage.getItem(BUILD_ID_KEY);
+          if (storedBuildId && storedBuildId !== BUILD_ID) {
+               signOut(auth).finally(() => {
+                    localStorage.setItem(BUILD_ID_KEY, BUILD_ID);
+                    navigate("/plataforma/login", { replace: true });
+               });
+          } else {
+               localStorage.setItem(BUILD_ID_KEY, BUILD_ID);
+          }
+     }, [navigate]);
 
      async function loginWithGithub() {
           setError(null);

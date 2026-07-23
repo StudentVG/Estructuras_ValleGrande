@@ -4,6 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: {
+    'import.meta.env.VITE_BUILD_ID': JSON.stringify(Date.now().toString()),
+  },
   server: {
     proxy: {
       '/github-oauth': {
