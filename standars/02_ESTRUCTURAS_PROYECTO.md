@@ -491,7 +491,8 @@ export interface Client {
 | Sin carpetas `core/`, `shared/`, `modules/`          | Estructura de módulos ausente        |
 | Llamadas HTTP en componentes (sin servicio)          | Lógica de datos en la vista          |
 | Sin `environments/`                                  | Configuración de URL hardcodeada     |
-| Bootstrap instalado con CDN en lugar de npm          | Violación de stack Angular           |
+| Bootstrap o Tailwind instalado con CDN en lugar de npm | Violación de stack Angular           |
+| Mezclar Bootstrap y Tailwind en el mismo proyecto     | El equipo debe elegir solo uno       |
 | `node_modules/` en el repositorio                    | Dependencias subidas a git           |
 
 ---

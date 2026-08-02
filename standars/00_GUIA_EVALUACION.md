@@ -34,7 +34,7 @@
 | Semestre | Backend                             | Frontend             | Base de datos             |
 | -------- | ----------------------------------- | -------------------- | ------------------------- |
 | II       | Java Swing + JDBC **ó** Flask       | Jinja2 + Tailwind CDN| MySQL                     |
-| III      | Spring Boot 3 MVC + JPA             | Angular 17+ Bootstrap| SQL Server                |
+| III      | Spring Boot 3 MVC + JPA             | Angular 17+ (Bootstrap ó Tailwind) | SQL Server  |
 | IV       | Spring WebFlux R2DBC **ó** Flask    | React 19 + Vite **ó** Expo | Oracle **ó** MongoDB **ó** SQLite |
 | V·VI     | Spring WebFlux + PostgreSQL R2DBC   | Angular 17+ **ó** React 19 + TS | PostgreSQL + MongoDB |
 

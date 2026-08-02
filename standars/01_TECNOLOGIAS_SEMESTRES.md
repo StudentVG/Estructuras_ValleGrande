@@ -67,7 +67,7 @@
 | ------------- | ------- | ---------------------- | ------------- |
 | Angular       | 17+     | Framework SPA          | Sí            |
 | TypeScript    | 5       | Lenguaje tipado        | Sí            |
-| Bootstrap 5   | 5.x     | Estilos y componentes  | Sí            |
+| Bootstrap 5 ó Tailwind | 5.x / — | Estilos y componentes — el equipo elige uno | Sí (uno) |
 | Node.js       | 20+     | Entorno de ejecución   | Sí            |
 | Angular CLI   | —       | Scaffolding            | Sí            |
 

@@ -35,8 +35,8 @@ const TECH_STACK = [
                { name: "Angular 17+", role: "Framework SPA", color: "text-rose-400", bg: "bg-rose-500/8 border-rose-500/20" },
                { name: "TypeScript", role: "Tipado estático en Angular", color: "text-blue-400", bg: "bg-blue-500/8 border-blue-500/20" },
                { name: "HTML & CSS", role: "Estructura y estilos base", color: "text-orange-400", bg: "bg-orange-500/8 border-orange-500/20" },
-               { name: "Bootstrap 5", role: "Framework CSS de componentes", color: "text-indigo-400", bg: "bg-indigo-500/8 border-indigo-500/20" },
-               { name: "RxJS", role: "Programación reactiva (HTTP)", color: "text-pink-400", bg: "bg-pink-500/8 border-pink-500/20" },
+               { name: "Bootstrap 5 ó Tailwind", role: "Framework CSS — el equipo elige uno", color: "text-indigo-400", bg: "bg-indigo-500/8 border-indigo-500/20" },
+               { name: "RxJS", role: "Ya viene con Angular — HttpClient retorna Observable", color: "text-pink-400", bg: "bg-pink-500/8 border-pink-500/20" },
                { name: "VS Code / IntelliJ", role: "Editor de frontend", color: "text-slate-400", bg: "bg-slate-500/8 border-slate-500/20" },
           ],
      },
@@ -909,6 +909,34 @@ export default function Semester3() {
                                    );
                               })}
                          </pre>
+                    </div>
+
+                    <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">RxJS — lo mínimo que necesitas</p>
+                    <p className="text-slate-500 text-sm mb-4 leading-relaxed max-w-2xl">
+                         No es una librería que se instala aparte: viene incluida con Angular porque <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">HttpClient</code> devuelve un <span className="text-pink-400 font-medium">Observable</span>, no una Promise. En el 90% de los casos solo necesitas <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">.subscribe()</code> para leer el resultado.
+                    </p>
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden mb-6">
+                         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+                              <div className="flex gap-1.5">
+                                   <span className="w-3 h-3 rounded-full bg-red-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-green-500/60" />
+                              </div>
+                              <span className="text-slate-500 text-xs font-mono ml-2">client-list.component.ts</span>
+                         </div>
+                         <pre className="text-xs font-mono leading-relaxed p-5 overflow-x-auto text-slate-300 whitespace-pre">{`export class ClientListComponent implements OnInit {
+  clients: Client[] = [];
+
+  constructor(private clientService: ClientService) {}
+
+  ngOnInit(): void {
+    // .subscribe() ejecuta la petición y entrega el resultado aquí
+    this.clientService.getAll().subscribe({
+      next: (data) => this.clients = data,
+      error: (err) => console.error('Error al cargar clientes', err),
+    });
+  }
+}`}</pre>
                     </div>
 
                     <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden mb-6">
