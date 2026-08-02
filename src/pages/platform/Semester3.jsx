@@ -105,7 +105,7 @@ const DB_NAMING_SQLSERVER = [
      { element: "Tablas", rule: "snake_case · plural · inglés", good: "clients, purchase_orders", bad: "Client, tbl_Clientes" },
      { element: "Columnas", rule: "snake_case · inglés", good: "full_name, created_at", bad: "FullName, fch_creacion" },
      { element: "Primary Key", rule: "siempre id", good: "id BIGINT IDENTITY(1,1)", bad: "id_cliente, clientId" },
-     { element: "Foreign Key", rule: "{tabla_singular}_id", good: "organization_id", bad: "orgId, id_organizacion" },
+     { element: "Foreign Key", rule: "{tabla_singular}_id", good: "category_id", bad: "categoryId, id_categoria" },
      { element: "Booleanos (dominio, no ciclo de vida)", rule: "prefijo is_ / has_ · tipo BIT", good: "is_verified", bad: "is_active junto a status" },
      { element: "Estado lógico", rule: "columna status · CHAR(1) — única fuente de verdad", good: "status ('A' / 'I')", bad: "estado, is_deleted, is_active" },
 ];
@@ -116,7 +116,6 @@ CREATE TABLE clients (
     full_name       VARCHAR(100)  NOT NULL,
     email           VARCHAR(150)  NOT NULL UNIQUE,
     status          CHAR(1)       NOT NULL DEFAULT 'A',   -- único campo del ciclo de vida
-    organization_id BIGINT        REFERENCES organizations(id),
     created_at      DATETIME2     NOT NULL DEFAULT GETDATE(),
     updated_at      DATETIME2     NOT NULL DEFAULT GETDATE()
 );`;
@@ -150,10 +149,6 @@ public class Client {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-    @ManyToOne
-    @JoinColumn(name = "organization_id")   // FK: {tabla_singular}_id
-    private Organization organization;
 }
 
 // repository/ClientRepository.java

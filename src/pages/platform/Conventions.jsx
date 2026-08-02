@@ -88,8 +88,8 @@ public class Client {            // clase: PascalCase, singular
     private LocalDateTime updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "organization_id") // FK: {tabla_singular}_id
-    private Organization organization;
+    @JoinColumn(name = "category_id") // FK: {tabla_singular}_id
+    private Category category;
 }`;
 
 const DB_MAPPING_MONGO = `// Entidad Java ↔ Colección MongoDB
@@ -105,7 +105,7 @@ public class Client {              // clase: PascalCase, singular
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private String organizationId; // referencia FK: sufijo Id
+    private String categoryId;     // referencia FK: sufijo Id
 }`;
 
 const COMMENT_LEVELS = [

@@ -69,7 +69,7 @@ Glosario de términos de dominio frecuentes (español → inglés) para no tradu
 | --------------------------------- | -------------------- | ----------------------- |
 | `snake_case`                      | `first_name`         | `firstName`, `FirstName`|
 | Singular                          | `status`             | `statuses`              |
-| Foreign key: `{tabla_singular}_id`| `organization_id`    | `orgId`, `idOrg`        |
+| Foreign key: `{tabla_singular}_id`| `category_id`        | `categoryId`, `idCategory` |
 | Booleanos (dominio, no ciclo de vida): prefijo `is_` ó `has_` | `is_verified` | `active`, `activo`, `is_active` junto a `status` (ver 2.4.1) |
 
 ### 2.3 Primary Keys
@@ -400,15 +400,15 @@ CREATE TABLE users (
     full_name   VARCHAR(100)    NOT NULL,
     email       VARCHAR(150)    NOT NULL UNIQUE,
     role        VARCHAR(30)     NOT NULL,
-    org_id      BIGINT          REFERENCES organizations(id),
     status      CHAR(1)         NOT NULL DEFAULT 'A',
     created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMP       NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_org_id ON users(org_id);
 ```
+
+> **Multi-tenancy (`organization_id` / `org_id`):** solo aplica a los microservicios PRS de **Semestre V·VI** (ver `04_PATRONES_ARQUITECTURA.md`, sección Hexagonal/CQRS). En los semestres II, III y IV **no** se agrega columna de organización — los proyectos de esos ciclos no son multi-tenant.
 
 **Regla:** `ddl-auto` en `application.yaml` debe ser `update` (nunca `create-drop` en un entorno compartido) para que Hibernate mantenga el schema sincronizado con las entidades.
 
@@ -438,10 +438,9 @@ public class AuditLog {
     private ObjectId id;
 
     private String action;          // "USER_CREATED", "USER_UPDATED"
-    private String entityType;      // "USER", "ORGANIZATION"
+    private String entityType;      // "USER", "PRODUCT"
     private String entityId;
     private String performedBy;     // userId del actor
-    private String orgId;
     private Object payload;         // Schema libre — JSON del estado anterior/nuevo
     private Instant timestamp;
 }
