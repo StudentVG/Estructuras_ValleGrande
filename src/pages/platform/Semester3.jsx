@@ -43,12 +43,12 @@ const TECH_STACK = [
 ];
 
 const SPRING_PACKAGES = [
-     { pkg: "controller", accent: "text-sky-400", bg: "bg-sky-500/8 border-sky-500/20", desc: "Endpoints REST. Recibe peticiones HTTP y delega al service.", suffix: "Sufijo Controller", example: "ClientController, ProductController" },
+     { pkg: "rest", accent: "text-sky-400", bg: "bg-sky-500/8 border-sky-500/20", desc: "Endpoints REST. Recibe peticiones HTTP y delega al service.", suffix: "Sufijo Rest", example: "ClientRest, ProductRest" },
      { pkg: "service", accent: "text-emerald-400", bg: "bg-emerald-500/8 border-emerald-500/20", desc: "Lógica de negocio. Anota con @Service.", suffix: "Sufijo Service", example: "ClientService, ProductService" },
      { pkg: "repository", accent: "text-violet-400", bg: "bg-violet-500/8 border-violet-500/20", desc: "Acceso a datos. Extiende JpaRepository o CrudRepository.", suffix: "Sufijo Repository", example: "ClientRepository" },
      { pkg: "model", accent: "text-indigo-400", bg: "bg-indigo-500/8 border-indigo-500/20", desc: "Entidades JPA. Mapea cada tabla de SQL Server con @Entity.", suffix: "", example: "Client, Product" },
      { pkg: "dto", accent: "text-pink-400", bg: "bg-pink-500/8 border-pink-500/20", desc: "Objetos de transferencia. Separa la entidad de la respuesta/request del API.", suffix: "Sufijo Dto o Request/Response", example: "ClientDto, ClientRequest" },
-     { pkg: "exception", accent: "text-red-400", bg: "bg-red-500/8 border-red-500/20", desc: "Manejo global de errores con @ControllerAdvice y excepciones custom.", suffix: "", example: "GlobalExceptionHandler, ResourceNotFoundException" },
+     { pkg: "exception", accent: "text-red-400", bg: "bg-red-500/8 border-red-500/20", desc: "Manejo global de errores con @RestControllerAdvice y excepciones custom.", suffix: "", example: "GlobalExceptionHandler, ResourceNotFoundException" },
      { pkg: "config", accent: "text-yellow-400", bg: "bg-yellow-500/8 border-yellow-500/20", desc: "Configuraciones de Spring (@Configuration). CORS, Security, Beans.", suffix: "Sufijo Config", example: "CorsConfig, SecurityConfig" },
      { pkg: "util", accent: "text-green-400", bg: "bg-green-500/8 border-green-500/20", desc: "Clases utilitarias sin estado. Constantes, validadores, helpers.", suffix: "", example: "DateUtil, Constants" },
 ];
@@ -302,8 +302,8 @@ const COMMITS = [
      { type: "feat", color: "text-green-400 bg-green-500/10 border-green-500/25", desc: "New feature", ex: "feat(client): add POST /api/clients endpoint" },
      { type: "fix", color: "text-red-400 bg-red-500/10 border-red-500/25", desc: "Bug fix", ex: "fix(service): resolve NullPointerException in ClientService" },
      { type: "style", color: "text-pink-400 bg-pink-500/10 border-pink-500/25", desc: "CSS / HTML style changes", ex: "style: adjust padding in ng-bootstrap table" },
-     { type: "refactor", color: "text-yellow-400 bg-yellow-500/10 border-yellow-500/25", desc: "Refactor without behavior change", ex: "refactor: move logic from Controller to ClientService" },
-     { type: "docs", color: "text-sky-400 bg-sky-500/10 border-sky-500/25", desc: "Documentation changes", ex: "docs: add Swagger annotations to ClientController" },
+     { type: "refactor", color: "text-yellow-400 bg-yellow-500/10 border-yellow-500/25", desc: "Refactor without behavior change", ex: "refactor: move logic from Rest to ClientService" },
+     { type: "docs", color: "text-sky-400 bg-sky-500/10 border-sky-500/25", desc: "Documentation changes", ex: "docs: add Swagger annotations to ClientRest" },
      { type: "chore", color: "text-slate-400 bg-slate-500/10 border-slate-500/25", desc: "Maintenance and config", ex: "chore: add .gitignore for IntelliJ and Maven" },
      { type: "test", color: "text-violet-400 bg-violet-500/10 border-violet-500/25", desc: "Unit / integration tests", ex: "test: add unit test to ClientService with Mockito" },
      { type: "perf", color: "text-orange-400 bg-orange-500/10 border-orange-500/25", desc: "Performance improvements", ex: "perf: add index to email column in SQL Server" },
@@ -631,7 +631,7 @@ export default function Semester3() {
                               <rect x="147" y="25" width="120" height="18" rx="6" fill="#0c2231" />
                               <rect x="147" y="35" width="120" height="8" fill="#0c2231" />
                               <text x="207" y="37" textAnchor="middle" fontSize="7.5" fill="#7dd3fc" fontFamily="monospace">@RestController</text>
-                              <text x="207" y="60" textAnchor="middle" fontSize="8.5" fill="#94a3b8" fontFamily="monospace">Controller</text>
+                              <text x="207" y="60" textAnchor="middle" fontSize="8.5" fill="#94a3b8" fontFamily="monospace">Rest</text>
                               <text x="207" y="74" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">@GetMapping · @PostMapping</text>
                               <line x1="267" y1="55" x2="312" y2="55" stroke="#34d399" strokeWidth="1.8" markerEnd="url(#arrowGreen3)" />
                               <text x="289" y="47" textAnchor="middle" fontSize="7" fill="#34d399" fontFamily="monospace">llama</text>

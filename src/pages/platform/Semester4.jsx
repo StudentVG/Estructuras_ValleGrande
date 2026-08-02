@@ -600,7 +600,7 @@ const COMMITS = [
      { type: "feat", color: "text-green-400 bg-green-500/10 border-green-500/25", desc: "New feature", ex: "feat(client): add POST /api/clients endpoint" },
      { type: "fix", color: "text-red-400 bg-red-500/10 border-red-500/25", desc: "Bug fix", ex: "fix(service): resolve NullPointerException in ClientService" },
      { type: "style", color: "text-pink-400 bg-pink-500/10 border-pink-500/25", desc: "CSS / HTML style changes", ex: "style: adjust padding in client-list component" },
-     { type: "refactor", color: "text-yellow-400 bg-yellow-500/10 border-yellow-500/25", desc: "Refactor without behavior change", ex: "refactor: move logic from Controller to ClientService" },
+     { type: "refactor", color: "text-yellow-400 bg-yellow-500/10 border-yellow-500/25", desc: "Refactor without behavior change", ex: "refactor: move logic from Rest to ClientService" },
      { type: "docs", color: "text-sky-400 bg-sky-500/10 border-sky-500/25", desc: "Documentation changes", ex: "docs: add Swagger annotations to ClientRest" },
      { type: "chore", color: "text-slate-400 bg-slate-500/10 border-slate-500/25", desc: "Maintenance and config", ex: "chore: add .gitignore for venv and __pycache__" },
      { type: "test", color: "text-violet-400 bg-violet-500/10 border-violet-500/25", desc: "Unit / integration tests", ex: "test: add unit test to ClientService with pytest" },

@@ -38,6 +38,8 @@
 | IV       | Spring WebFlux R2DBC **ó** Flask    | React 19 + Vite **ó** Expo | Oracle **ó** MongoDB **ó** SQLite |
 | V·VI     | Spring WebFlux + PostgreSQL R2DBC   | Angular 17+ **ó** React 19 + TS | PostgreSQL + MongoDB |
 
+> **Nota para el evaluador — versión de Angular:** donde se indica `Angular 17+`, el `+` significa **17 o superior**. Un proyecto con Angular 18, 19, 20 o cualquier versión mayor a 17 es válido y **no debe descontarse ni marcarse como desviación del stack**. Solo se marca violación si la versión detectada en `package.json` es **menor** a 17.
+
 ---
 
 ## 2. Categorías de Evaluación y Pesos

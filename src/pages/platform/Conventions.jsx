@@ -136,7 +136,7 @@ const COMMENT_JAVA = `/** Handles client CRUD REST operations. */
 @RestController
 @RequestMapping("/api/v1/clients")
 @RequiredArgsConstructor
-public class ClientController {
+public class ClientRest {
 
     private final ClientService service;
 
@@ -467,7 +467,7 @@ function CommentsTab() {
      const [lang, setLang] = useState("java");
 
      const codeMap = { java: COMMENT_JAVA, python: COMMENT_PYTHON, js: COMMENT_JS_TS };
-     const fileMap = { java: "ClientController.java · ClientService.java · ClientRepository.java", python: "clientes.py · cliente_service.py", js: "ClientPage.jsx · DataTable.jsx · useClients.js · client.service.ts" };
+     const fileMap = { java: "ClientRest.java · ClientService.java · ClientRepository.java", python: "clientes.py · cliente_service.py", js: "ClientPage.jsx · DataTable.jsx · useClients.js · client.service.ts" };
      const langLabels = [
           { id: "java", label: "Java", color: "bg-orange-500/15 text-orange-300" },
           { id: "python", label: "Python", color: "bg-yellow-500/15 text-yellow-300" },
