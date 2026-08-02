@@ -258,7 +258,9 @@ vg-ms-{nombre}/
 │   │   │       │   └── {Entidad}Rest.java             ← sufijo obligatorio: Rest
 │   │   │       │
 │   │   │       ├── service/                           ← OBLIGATORIO
-│   │   │       │   └── {Entidad}Service.java          ← sufijo: Service
+│   │   │       │   ├── {Entidad}Service.java          ← INTERFAZ — obligatoria
+│   │   │       │   └── impl/                          ← OBLIGATORIO
+│   │   │       │       └── {Entidad}ServiceImpl.java  ← sufijo: ServiceImpl
 │   │   │       │
 │   │   │       ├── repository/                        ← OBLIGATORIO
 │   │   │       │   └── {Entidad}Repository.java       ← sufijo: Repository
@@ -303,13 +305,25 @@ public class CorsConfig implements WebMvcConfigurer {
 // rest/{Entidad}Rest.java — debe tener @RestController + @RequestMapping
 @RestController
 @RequestMapping("/api/v1/{entidades}")
+@RequiredArgsConstructor
 public class ClientRest {
+    private final ClientService service;  // inyecta la INTERFAZ, nunca el Impl
     // @GetMapping, @PostMapping, @PutMapping, @DeleteMapping
 
-// service/{Entidad}Service.java — debe tener @Service
+// service/{Entidad}Service.java — DEBE ser interfaz
+public interface ClientService {
+    List<ClientDto> findAll();
+    ClientDto findById(Long id);
+    ClientDto create(ClientDto dto);
+    void delete(Long id);
+}
+
+// service/impl/{Entidad}ServiceImpl.java — debe tener @Service
 @Service
-public class ClientService {
-    // @Autowired ó @RequiredArgsConstructor para repositorio
+@RequiredArgsConstructor
+public class ClientServiceImpl implements ClientService {
+    private final ClientRepository repository;
+    // implementa cada método de la interfaz
 
 // repository/{Entidad}Repository.java — debe extender JpaRepository
 public interface ClientRepository extends JpaRepository<Client, Long> {}
@@ -373,6 +387,8 @@ server:
 | Carpeta `controller/` en lugar de `rest/`           | Sufijo incorrecto para este ciclo     |
 | `@Controller` en lugar de `@RestController`         | Clase no es REST                      |
 | `JpaRepository` inyectado directamente en Rest      | Acceso BD saltando el Service         |
+| `Service` sin interfaz + `impl/` (una sola clase concreta) | Falta separación especificación/implementación |
+| `Rest` inyecta `ServiceImpl` en lugar de la interfaz `Service` | Acoplamiento a la implementación concreta |
 | `application.properties` en lugar de `application.yaml` | Formato de configuración incorrecto |
 | `groupId` diferente de `pe.edu.vallegrande`         | Metadatos del proyecto incorrectos    |
 | Credenciales hardcodeadas en YAML                   | Violación de seguridad crítica        |

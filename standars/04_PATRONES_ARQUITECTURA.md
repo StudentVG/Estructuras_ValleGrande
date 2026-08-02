@@ -80,7 +80,7 @@ Angular (HTTP Request)
 @RestController (sufijo: Rest)
   │  valida request, delega
   ↓
-@Service
+Service (interfaz) → ServiceImpl (@Service)
   │  lógica de negocio, transacciones
   ↓
 JpaRepository
@@ -89,10 +89,33 @@ JpaRepository
 SQL Server
 ```
 
+### Interfaz + Implementación obligatoria
+
+Igual que en Semestre IV, `service` **siempre** se separa en interfaz (especificación) e implementación — nunca una única clase concreta.
+
+```java
+// service/ClientService.java — INTERFAZ obligatoria
+public interface ClientService {
+    List<ClientDto> findAll();
+    ClientDto findById(Long id);
+    ClientDto create(ClientDto dto);
+    ClientDto update(Long id, ClientDto dto);
+    void delete(Long id);
+}
+
+// service/impl/ClientServiceImpl.java — IMPLEMENTACIÓN
+@Service
+@RequiredArgsConstructor
+public class ClientServiceImpl implements ClientService {
+    private final ClientRepository repository;
+    // ...
+}
+```
+
 ### Reglas de dependencias
 
-- `Rest` inyecta `Service` — **nunca `Repository` directamente**
-- `Service` inyecta `Repository`
+- `Rest` inyecta la interfaz `Service` — **nunca `ServiceImpl` ni `Repository` directamente**
+- `ServiceImpl` inyecta `Repository`
 - `Repository` no tiene lógica de negocio
 - La entidad `@Entity` es solo un POJO de datos
 
@@ -101,6 +124,8 @@ SQL Server
 | Violación                                          | Severidad |
 | -------------------------------------------------- | --------- |
 | `@Autowired` del `Repository` en el `Rest`         | Crítica   |
+| `Service` como clase concreta (sin interfaz + `impl/`) | Crítica   |
+| `Rest` inyecta `ServiceImpl` en lugar de la interfaz | Alta      |
 | `ResponseEntity` en el `Service`                   | Alta      |
 | `@Entity` con métodos que llaman servicios         | Alta      |
 | `application.properties` en lugar de `.yaml`       | Media     |

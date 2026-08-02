@@ -44,7 +44,7 @@ const TECH_STACK = [
 
 const SPRING_PACKAGES = [
      { pkg: "rest", accent: "text-sky-400", bg: "bg-sky-500/8 border-sky-500/20", desc: "Endpoints REST. Recibe peticiones HTTP y delega al service.", suffix: "Sufijo Rest", example: "ClientRest, ProductRest" },
-     { pkg: "service", accent: "text-emerald-400", bg: "bg-emerald-500/8 border-emerald-500/20", desc: "Lógica de negocio. Anota con @Service.", suffix: "Sufijo Service", example: "ClientService, ProductService" },
+     { pkg: "service", accent: "text-emerald-400", bg: "bg-emerald-500/8 border-emerald-500/20", desc: "Lógica de negocio. Interfaz obligatoria + sub-paquete impl/ con @Service.", suffix: "Interfaz + impl/Impl", example: "ClientService (interfaz), impl/ClientServiceImpl" },
      { pkg: "repository", accent: "text-violet-400", bg: "bg-violet-500/8 border-violet-500/20", desc: "Acceso a datos. Extiende JpaRepository o CrudRepository.", suffix: "Sufijo Repository", example: "ClientRepository" },
      { pkg: "model", accent: "text-indigo-400", bg: "bg-indigo-500/8 border-indigo-500/20", desc: "Entidades JPA. Mapea cada tabla de SQL Server con @Entity.", suffix: "", example: "Client, Product" },
      { pkg: "dto", accent: "text-pink-400", bg: "bg-pink-500/8 border-pink-500/20", desc: "Objetos de transferencia. Separa la entidad de la respuesta/request del API.", suffix: "Sufijo Dto o Request/Response", example: "ClientDto, ClientRequest" },
@@ -66,7 +66,9 @@ const SPRING_STRUCTURE = `mi-proyecto/                    ← nombre del proyect
 │   │   │                   ├── rest/
 │   │   │                   │   └── ClientRest.java
 │   │   │                   ├── service/
-│   │   │                   │   └── ClientService.java
+│   │   │                   │   ├── ClientService.java      ← INTERFAZ
+│   │   │                   │   └── impl/
+│   │   │                   │       └── ClientServiceImpl.java
 │   │   │                   ├── repository/
 │   │   │                   │   └── ClientRepository.java
 │   │   │                   ├── model/
@@ -119,6 +121,45 @@ CREATE TABLE clients (
     created_at      DATETIME2     NOT NULL DEFAULT GETDATE(),
     updated_at      DATETIME2     NOT NULL DEFAULT GETDATE()
 );`;
+
+const SERVICE_SNIPPET = `// service/ClientService.java — INTERFAZ obligatoria (especificación)
+public interface ClientService {
+    List<ClientDto> findAll();
+    ClientDto findById(Long id);
+    ClientDto create(ClientDto dto);
+    ClientDto update(Long id, ClientDto dto);
+    void delete(Long id);
+}
+
+// service/impl/ClientServiceImpl.java — IMPLEMENTACIÓN
+@Service
+@RequiredArgsConstructor
+public class ClientServiceImpl implements ClientService {
+    private final ClientRepository repository;
+
+    @Override
+    public List<ClientDto> findAll() {
+        return repository.findByStatus("A").stream()
+            .map(this::toDto)
+            .toList();
+    }
+
+    @Override
+    public ClientDto create(ClientDto dto) {
+        Client saved = repository.save(toEntity(dto));
+        return toDto(saved);
+    }
+    // ...resto de métodos + mapeo Entity <-> Dto
+}
+
+// rest/ClientRest.java — inyecta la INTERFAZ, nunca el Impl
+@RestController
+@RequestMapping("/api/v1/clients")
+@RequiredArgsConstructor
+public class ClientRest {
+    private final ClientService service;   // ← tipo interfaz
+    // Spring inyecta ClientServiceImpl automáticamente
+}`;
 
 const ENTITY_SQLSERVER_JAVA = `// model/Client.java — Entidad JPA mapeada a SQL Server
 @Entity
@@ -640,6 +681,22 @@ export default function Semester3() {
                          ))}
                     </div>
 
+                    <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">Service — interfaz + implementación (obligatorio)</p>
+                    <p className="text-slate-500 text-sm mb-4 leading-relaxed max-w-2xl">
+                         Igual que en Semestre IV, <span className="text-emerald-400 font-medium">service</span> nunca es una sola clase concreta: siempre se separa en interfaz (especificación) e implementación. El <span className="text-sky-400 font-medium">Rest</span> inyecta la interfaz, nunca el <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">Impl</code> directamente.
+                    </p>
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden mb-6">
+                         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+                              <div className="flex gap-1.5">
+                                   <span className="w-3 h-3 rounded-full bg-red-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-green-500/60" />
+                              </div>
+                              <span className="text-slate-500 text-xs font-mono ml-2">service/ClientService.java · service/impl/ClientServiceImpl.java · rest/ClientRest.java</span>
+                         </div>
+                         <pre className="text-xs font-mono leading-relaxed p-5 overflow-x-auto text-slate-300 whitespace-pre">{SERVICE_SNIPPET}</pre>
+                    </div>
+
                     <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">Flujo REST — petición HTTP</p>
                     <div className="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden p-6 overflow-x-auto mb-6">
                          <svg viewBox="0 0 780 120" className="w-full min-w-120" xmlns="http://www.w3.org/2000/svg">
@@ -660,7 +717,7 @@ export default function Semester3() {
                               <rect x="314" y="25" width="120" height="18" rx="6" fill="#022c22" />
                               <rect x="314" y="35" width="120" height="8" fill="#022c22" />
                               <text x="374" y="37" textAnchor="middle" fontSize="7.5" fill="#6ee7b7" fontFamily="monospace">@Service</text>
-                              <text x="374" y="60" textAnchor="middle" fontSize="8.5" fill="#94a3b8" fontFamily="monospace">Service</text>
+                              <text x="374" y="60" textAnchor="middle" fontSize="8.5" fill="#94a3b8" fontFamily="monospace">ServiceImpl</text>
                               <text x="374" y="74" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">lógica de negocio</text>
                               <line x1="434" y1="55" x2="480" y2="55" stroke="#a78bfa" strokeWidth="1.8" markerEnd="url(#arrowPurple3)" />
                               <text x="457" y="47" textAnchor="middle" fontSize="7" fill="#a78bfa" fontFamily="monospace">llama</text>
