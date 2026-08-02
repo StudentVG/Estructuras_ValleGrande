@@ -12,6 +12,7 @@ const fadeUp = {
 const TABS = [
      { id: "database", label: "Base de Datos", icon: "🗄", accent: "teal" },
      { id: "comments", label: "Comentarios en Código", icon: "💬", accent: "violet" },
+     { id: "reports", label: "Reportes y Exportación", icon: "🧾", accent: "amber" },
 ];
 
 
@@ -307,9 +308,78 @@ const COMMENT_FORMAT = [
      { lang: "TypeScript", syntax: "TSDoc", format: "/** Single-line description. */", multiline: "/**\\n * Multiline description.\\n * @param id - The client identifier\\n * @returns Observable of client\\n */", color: "text-blue-400", bg: "bg-blue-500/8 border-blue-500/20" },
 ];
 
+const REPORT_OPTIONS = [
+     {
+          name: "JasperReports",
+          side: "Backend (Java)",
+          accent: "orange",
+          desc: "Genera el PDF en el servidor a partir de una plantilla .jrxml diseñada visualmente (Jaspersoft Studio) y datos que le pasa el microservicio.",
+          pros: ["Plantillas visuales reutilizables (logo, cabecera, pie de página fijos)", "Formato idéntico sin importar el navegador del cliente", "Ideal para documentos formales: boletas, facturas, constancias"],
+          cons: ["Requiere diseñar el .jrxml (curva de aprendizaje adicional)", "Más pesado de configurar que una librería frontend", "El backend carga con el trabajo de renderizado"],
+          when: "Documentos legales/fiscales (boletas, facturas) donde el formato debe ser exacto y consistente — típico en Semestre V·VI.",
+     },
+     {
+          name: "jsPDF + autoTable / pdfmake",
+          side: "Frontend (React / Angular)",
+          accent: "sky",
+          desc: "Genera el PDF directamente en el navegador a partir de los datos ya cargados en la vista (tabla, formulario), sin ida y vuelta al backend.",
+          pros: ["Cero carga extra en el backend", "Rápido de implementar para reportes simples", "El usuario descarga el archivo al instante"],
+          cons: ["Formato depende de cómo lo armes en JS — más manual", "No es ideal para documentos legales/fiscales complejos", "Cada frontend (Angular/React) repite su propia lógica de exportación"],
+          when: "Reportes internos rápidos: exportar una tabla, un listado, un resumen — común en Semestre II al IV.",
+     },
+];
+
+const REPORT_SNIPPET_JASPER = `// report/InvoiceReportService.java — Backend Java (Semestre III/IV/V·VI)
+@Service
+@RequiredArgsConstructor
+public class InvoiceReportService {
+
+    public byte[] generateInvoicePdf(Long clientId) throws JRException, IOException {
+        InputStream template = getClass().getResourceAsStream("/reports/invoice.jrxml");
+        JasperReport report = JasperCompileManager.compileReport(template);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("clientId", clientId);
+
+        JasperPrint print = JasperFillManager.fillReport(report, params, dataSource);
+        return JasperExportManager.exportReportToPdf(print);
+    }
+}
+
+// rest/InvoiceRest.java
+@GetMapping("/{clientId}/invoice")
+public ResponseEntity<byte[]> downloadInvoice(@PathVariable Long clientId) throws Exception {
+    byte[] pdf = invoiceReportService.generateInvoicePdf(clientId);
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=invoice.pdf")
+        .contentType(MediaType.APPLICATION_PDF)
+        .body(pdf);
+}`;
+
+const REPORT_SNIPPET_FRONTEND = `// utils/exportClientsPdf.js — Frontend (React / Angular, JS puro)
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+export function exportClientsPdf(clients) {
+  const doc = new jsPDF();
+  doc.text('Reporte de Clientes', 14, 15);
+
+  autoTable(doc, {
+    startY: 20,
+    head: [['ID', 'Nombre', 'Email', 'Estado']],
+    body: clients.map(c => [c.id, c.fullName, c.email, c.status]),
+  });
+
+  doc.save('clientes.pdf');
+}
+
+// ClientListPage.jsx — uso en un botón
+<button onClick={() => exportClientsPdf(clients)}>Exportar PDF</button>`;
+
 const ACCENT = {
      teal: { active: "bg-teal-600/20 border-teal-500/50 text-teal-300", inactive: "border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300", bar: "bg-teal-500", dot: "text-teal-400", badge: "bg-teal-500/15 border-teal-500/25 text-teal-400" },
      violet: { active: "bg-violet-600/20 border-violet-500/50 text-violet-300", inactive: "border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300", bar: "bg-violet-500", dot: "text-violet-400", badge: "bg-violet-500/15 border-violet-500/25 text-violet-400" },
+     amber: { active: "bg-amber-600/20 border-amber-500/50 text-amber-300", inactive: "border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300", bar: "bg-amber-500", dot: "text-amber-400", badge: "bg-amber-500/15 border-amber-500/25 text-amber-400" },
 };
 
 function SectionHeader({ color, title, badge, badgeColor }) {
@@ -570,6 +640,56 @@ function CommentsTab() {
      );
 }
 
+function ReportsTab() {
+     return (
+          <div className="space-y-10">
+               <div>
+                    <SectionHeader color="bg-amber-500" title="¿Backend o Frontend para generar reportes?" />
+                    <p className="text-slate-500 text-sm mb-4">Ambos enfoques son válidos — la elección depende del tipo de documento. No hay una única forma correcta, pero sí un criterio claro para decidir.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         {REPORT_OPTIONS.map((opt) => (
+                              <div key={opt.name} className={`rounded-2xl border p-5 space-y-3 ${opt.accent === "orange" ? "border-orange-500/20 bg-orange-500/5" : "border-sky-500/20 bg-sky-500/5"}`}>
+                                   <div className="flex items-center justify-between gap-2">
+                                        <h3 className={`font-bold text-base ${opt.accent === "orange" ? "text-orange-400" : "text-sky-400"}`}>{opt.name}</h3>
+                                        <span className="text-slate-500 text-[10px] font-mono uppercase tracking-widest">{opt.side}</span>
+                                   </div>
+                                   <p className="text-slate-400 text-xs leading-relaxed">{opt.desc}</p>
+                                   <div>
+                                        <p className="text-emerald-400 text-[10px] font-bold uppercase tracking-widest mb-1">Ventajas</p>
+                                        <ul className="space-y-0.5">
+                                             {opt.pros.map((p) => <li key={p} className="text-slate-400 text-xs">✓ {p}</li>)}
+                                        </ul>
+                                   </div>
+                                   <div>
+                                        <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest mb-1">Desventajas</p>
+                                        <ul className="space-y-0.5">
+                                             {opt.cons.map((c) => <li key={c} className="text-slate-400 text-xs">✗ {c}</li>)}
+                                        </ul>
+                                   </div>
+                                   <div className="rounded-lg border border-slate-800 px-3 py-2 bg-slate-900/40">
+                                        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Ideal para</p>
+                                        <p className="text-slate-300 text-xs">{opt.when}</p>
+                                   </div>
+                              </div>
+                         ))}
+                    </div>
+               </div>
+
+               <div>
+                    <SectionHeader color="bg-orange-500" title="Backend — JasperReports" badge="Boletas / Facturas" badgeColor="bg-orange-500/15 border-orange-500/25 text-orange-400" />
+                    <p className="text-slate-500 text-sm mb-4 max-w-2xl">La plantilla <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">.jrxml</code> vive en <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">resources/reports/</code>. El servicio compila la plantilla, la rellena con datos y expone el PDF por un endpoint REST.</p>
+                    <CodeBlock filename="report/InvoiceReportService.java · rest/InvoiceRest.java" code={REPORT_SNIPPET_JASPER} />
+               </div>
+
+               <div>
+                    <SectionHeader color="bg-sky-500" title="Frontend — jsPDF + autoTable" badge="Reportes internos" badgeColor="bg-sky-500/15 border-sky-500/25 text-sky-400" />
+                    <p className="text-slate-500 text-sm mb-4 max-w-2xl">Sirve igual en React o Angular (es JavaScript puro). Para tablas grandes también se puede exportar a Excel con <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">exceljs</code> o <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">xlsx</code> siguiendo el mismo patrón: una función en <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">utils/</code>.</p>
+                    <CodeBlock filename="utils/exportClientsPdf.js" code={REPORT_SNIPPET_FRONTEND} />
+               </div>
+          </div>
+     );
+}
+
 
 export default function Conventions() {
      const [activeTab, setActiveTab] = useState("database");
@@ -618,6 +738,11 @@ export default function Conventions() {
                          {activeTab === "comments" && (
                               <motion.div key="comments" custom={2} variants={fadeUp} initial="hidden" animate="show" exit={{ opacity: 0, y: -10 }}>
                                    <CommentsTab />
+                              </motion.div>
+                         )}
+                         {activeTab === "reports" && (
+                              <motion.div key="reports" custom={2} variants={fadeUp} initial="hidden" animate="show" exit={{ opacity: 0, y: -10 }}>
+                                   <ReportsTab />
                               </motion.div>
                          )}
                     </AnimatePresence>

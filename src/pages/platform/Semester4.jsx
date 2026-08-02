@@ -1038,6 +1038,26 @@ export default function Semester4() {
                                    </div>
                                    <CodeBlock filename="axiosConfig.js · clientApi.js · useClients.js" code={REACT_SNIPPET} lang="js" />
                               </div>
+
+                              <div>
+                                   <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-1 h-5 bg-pink-500 rounded-full" />
+                                        <h2 className="text-white font-bold text-lg">¿Y los pipes de Angular? — equivalente en React</h2>
+                                   </div>
+                                   <p className="text-slate-500 text-sm mb-4 max-w-2xl">React no tiene pipes. La misma idea — transformar un valor antes de mostrarlo — se resuelve con una función pura en <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">utils/</code>, llamada directamente en el JSX.</p>
+                                   <CodeBlock filename="utils/formatStatus.js · ClientCard.jsx" code={`// utils/formatStatus.js
+// Transforma el status del backend ('A' / 'I') en texto legible.
+export function formatStatus(status) {
+  return status === 'A' ? 'Activo' : 'Inactivo';
+}
+
+// components/ClientCard.jsx — uso directo en el JSX
+import { formatStatus } from '../utils/formatStatus';
+
+export default function ClientCard({ client }) {
+  return <span>{formatStatus(client.status)}</span>;
+}`} lang="js" />
+                              </div>
                          </motion.div>
                     )}
 
@@ -1115,6 +1135,14 @@ export default function Semester4() {
                                         <h2 className="text-white font-bold text-lg">Componente nativo + consumo de API</h2>
                                    </div>
                                    <CodeBlock filename="app-button.tsx · auth.service.ts · use-auth.ts" code={EXPO_SNIPPET} />
+                              </div>
+
+                              <div>
+                                   <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-1 h-5 bg-pink-500 rounded-full" />
+                                        <h2 className="text-white font-bold text-lg">¿Y los pipes de Angular?</h2>
+                                   </div>
+                                   <p className="text-slate-500 text-sm max-w-2xl">Expo/React Native tampoco tiene pipes — es el mismo patrón que en React: una función pura en <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">utils/</code> (ej. <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">formatStatus.ts</code>) llamada directamente en el componente, sin librerías adicionales.</p>
                               </div>
                          </motion.div>
                     )}

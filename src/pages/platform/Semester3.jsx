@@ -170,6 +170,8 @@ const ANGULAR_STRUCTURE = `mi-proyecto-frontend/          ← ng new mi-proyecto
 │   │   ├── shared/                        ← componentes reutilizables
 │   │   │   ├── components/
 │   │   │   │   └── navbar/
+│   │   │   ├── pipes/
+│   │   │   │   └── status-label.pipe.ts
 │   │   │   └── models/
 │   │   │       └── client.model.ts
 │   │   ├── modules/                       ← un módulo por dominio
@@ -204,7 +206,26 @@ const ANGULAR_NAMES = [
      { what: "Module", rule: "kebab-case + .module.ts", example: "client.module.ts → ClientModule", color: "text-emerald-400", bg: "bg-emerald-500/8 border-emerald-500/20" },
      { what: "Guard", rule: "kebab-case + .guard.ts", example: "auth.guard.ts → AuthGuard", color: "text-yellow-400", bg: "bg-yellow-500/8 border-yellow-500/20" },
      { what: "Interceptor", rule: "kebab-case + .interceptor.ts", example: "auth.interceptor.ts → AuthInterceptor", color: "text-orange-400", bg: "bg-orange-500/8 border-orange-500/20" },
+     { what: "Pipe", rule: "kebab-case + .pipe.ts", example: "status-label.pipe.ts → StatusLabelPipe", color: "text-pink-400", bg: "bg-pink-500/8 border-pink-500/20" },
 ];
+
+const PIPE_SNIPPET = `// shared/pipes/status-label.pipe.ts
+// Transforma el status del backend ('A' / 'I') en un texto legible.
+// No es obligatorio: Angular ya trae pipes built-in (date, currency,
+// uppercase) que cubren la mayoría de casos. Un pipe custom solo se
+// crea cuando hay una transformación propia del dominio que se repite
+// en varias vistas — como este caso de 'status'.
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({ name: 'statusLabel', standalone: true })
+export class StatusLabelPipe implements PipeTransform {
+  transform(status: string): string {
+    return status === 'A' ? 'Activo' : 'Inactivo';
+  }
+}
+
+// client-list.component.html — uso en el template
+// <span>{{ client.status | statusLabel }}</span>`;
 
 const ENV_SNIPPET = `// environments/environment.ts
 export const environment = {
@@ -833,7 +854,7 @@ export default function Semester3() {
                          </pre>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden mb-6">
                          <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-800 bg-slate-900/80">
                               <div className="flex gap-1.5">
                                    <span className="w-3 h-3 rounded-full bg-red-500/60" />
@@ -843,6 +864,22 @@ export default function Semester3() {
                               <span className="text-slate-500 text-xs font-mono ml-2">estructura-angular/</span>
                          </div>
                          <FileTree content={ANGULAR_STRUCTURE} accentColor="rose" />
+                    </div>
+
+                    <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">Pipes — transformar datos en el template</p>
+                    <p className="text-slate-500 text-sm mb-4 max-w-2xl">
+                         Un <span className="text-pink-400 font-medium">pipe</span> formatea un valor directamente en el HTML sin tocar el componente. Angular ya trae varios (<code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">date</code>, <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">currency</code>, <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">uppercase</code>). Solo se crea uno propio cuando hay una transformación del dominio que se repite en varias vistas.
+                    </p>
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+                              <div className="flex gap-1.5">
+                                   <span className="w-3 h-3 rounded-full bg-red-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-green-500/60" />
+                              </div>
+                              <span className="text-slate-500 text-xs font-mono ml-2">shared/pipes/status-label.pipe.ts</span>
+                         </div>
+                         <pre className="text-xs font-mono leading-relaxed p-5 overflow-x-auto text-slate-300 whitespace-pre">{PIPE_SNIPPET}</pre>
                     </div>
                </motion.div>
 

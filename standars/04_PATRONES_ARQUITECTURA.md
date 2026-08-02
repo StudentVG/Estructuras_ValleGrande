@@ -691,3 +691,27 @@ vg-ms-notifications →  MongoDB:    vg_notifications_db
 | Curva aprendizaje     | Baja       | Media-Alta                  | Alta                          | Alta                         |
 | Ideal para            | CRUD simple| Lógica de negocio rica      | Lectura/escritura muy distintas | Ecosistema distribuido      |
 | Recomendado V·VI PRS  | CRUD básico| Servicio core (users, orgs) | Solo si se justifica          | Notificaciones, auditoría    |
+
+---
+
+## 14. Reportes y Exportación de Documentos (PDF/Excel)
+
+Generar boletas, facturas o reportes es válido desde **dos capas distintas** — ninguna es "la incorrecta", cada una tiene su caso de uso. Ver ejemplos completos en la página **Convenciones → Reportes y Exportación**.
+
+| Enfoque                              | Capa      | Cuándo usarlo                                                              |
+| ------------------------------------- | --------- | --------------------------------------------------------------------------- |
+| **JasperReports** (plantilla `.jrxml`) | Backend (Java) | Documentos formales/fiscales con formato fijo: boletas, facturas, constancias. Común en V·VI. |
+| **jsPDF + autoTable / pdfmake**       | Frontend (React/Angular) | Reportes internos rápidos: exportar una tabla o listado. Común en II-IV.    |
+| **exceljs / xlsx**                    | Frontend  | Exportar datos tabulares a Excel, mismo patrón que jsPDF.                    |
+
+**Convención de ubicación en el código:**
+- Backend: paquete `report/` (ej. `report/InvoiceReportService.java`), plantillas en `resources/reports/*.jrxml`.
+- Frontend: `utils/exportXxxPdf.js` (React) o `shared/utils/export-xxx.ts` (Angular) — nunca lógica de generación de PDF dentro de un componente.
+
+**Violaciones detectables:**
+
+| Patrón                                                        | Violación                              |
+| -------------------------------------------------------------- | --------------------------------------- |
+| Lógica de generación de PDF embebida directamente en un componente/página | Falta de separación de responsabilidades |
+| Generación de boletas/facturas fiscales solo en el frontend sin respaldo en backend | Documento fiscal no auditable/reproducible |
+| Credenciales o rutas de plantillas hardcodeadas                | Configuración no externalizada           |
