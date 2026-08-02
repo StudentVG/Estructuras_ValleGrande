@@ -152,7 +152,6 @@
 | Spring Security  | —       | Autenticación y autorización JWT   | Sí            |
 | RabbitMQ ó Kafka | —       | Mensajería asíncrona               | Sí            |
 | Resilience4j     | —       | CircuitBreaker + Retry             | Recomendado   |
-| Flyway           | —       | Migraciones SQL versionadas        | Sí            |
 | Lombok           | —       | Reducir boilerplate                | Sí            |
 | Maven            | 3.x     | Dependencias                       | Sí            |
 | Docker           | —       | Contenedores                       | Sí            |

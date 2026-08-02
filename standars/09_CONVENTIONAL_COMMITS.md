@@ -277,7 +277,6 @@ fix: correct RBAC — TEACHER should not create users
 refactor: migrate from layered to hexagonal in users service
 refactor: separate domain input and output ports
 perf: add composite index on organizations(org_id, status)
-chore: add Flyway for versioned SQL migrations
 chore: update Docker Compose with RabbitMQ and PostgreSQL
 docs: document PRS microservices ecosystem in README
 

@@ -327,6 +327,15 @@ const DB_STRATEGY = [
      { service: "vg-ms-config", db: "MongoDB / PostgreSQL", reason: "Configuraciones por organización — JSON flexible o JSONB si se prefiere SQL", color: "text-green-400" },
 ];
 
+const DB_NAMING_POSTGRES = [
+     { element: "Tablas", rule: "snake_case · plural · inglés", good: "users, organizations", bad: "User, tbl_usuarios" },
+     { element: "Columnas", rule: "snake_case · inglés", good: "full_name, org_id", bad: "fullName, id_organizacion" },
+     { element: "Primary Key", rule: "siempre id", good: "id BIGSERIAL", bad: "user_id, idUser" },
+     { element: "Foreign Key", rule: "{tabla_singular}_id", good: "org_id, role_id", bad: "orgId, fk_org" },
+     { element: "Colecciones Mongo", rule: "snake_case · plural · inglés", good: "audit_logs", bad: "AuditLog, logsAuditoria" },
+     { element: "Campos Mongo", rule: "camelCase · inglés", good: "performedBy, orgId", bad: "realizado_por" },
+];
+
 const SECURITY_OPTIONS = [
      {
           name: "Keycloak",
@@ -550,7 +559,7 @@ const BE_STRUCTURES = {
 │       └── 📂 security/                   ← GatewayHeaders, SecurityContextAdapter
 ├── 📂 src/main/resources/
 │   ├── 📋 application.yml                 ← profiles dev/prod
-│   └── 📂 db/migration/                   ← Flyway SQL migrations
+│   └── 📄 schema.sql                      ← script SQL de tablas
 ├── 📂 src/test/
 ├── 🐳 Dockerfile
 └── 📄 pom.xml`,
@@ -583,16 +592,17 @@ const BE_STRUCTURES = {
 
 const BE_SNIPPETS = {
      layered: `// ═══ model/User.java — PostgreSQL R2DBC ═══
-@Table("users")
+@Table("users")                        // tabla: snake_case, plural, inglés
 @Data @NoArgsConstructor @AllArgsConstructor
 public class User {
-    @Id private Long id;
-    private String name;
+    @Id private Long id;                // PK: siempre "id"
+    @Column("full_name") private String fullName;  // snake_case ↔ camelCase
     private String email;
-    private String orgId;
+    @Column("org_id") private String orgId;         // FK: {tabla_singular}_id
     @Column("role") private Role role;
-    private String status;
+    private String status;              // 'A' activo / 'I' inactivo (soft delete)
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
 
 // ═══ model/Role.java — enum de roles del sistema ═══
@@ -875,9 +885,9 @@ spring:
   rabbitmq:
     host: localhost
     port: 5672
-  flyway:
-    enabled: true
-    locations: classpath:db/migration`,
+  sql:
+    init:
+      mode: always`,
      cqrs: `// ═══ command/model/CreateUserCommand.java ═══
 public record CreateUserCommand(
     String name, String email, String orgId, Role role) {}
@@ -2005,6 +2015,31 @@ export default function Semester5() {
                                         </div>
                                    </div>
 
+                                   <div>
+                                        <div className="flex items-center gap-3 mb-2">
+                                             <div className="w-1 h-5 bg-red-500 rounded-full" />
+                                             <h2 className="text-white font-bold text-lg">Base de datos — Nomenclatura PostgreSQL / MongoDB</h2>
+                                             <span className="bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest">Inglés obligatorio</span>
+                                        </div>
+                                        <p className="text-slate-500 text-sm mb-4 max-w-2xl">Ver estándar completo en <span className="text-teal-400 font-medium">Convenciones → Base de Datos</span>.</p>
+                                        <div className="rounded-2xl border border-slate-800 overflow-hidden">
+                                             <div className="grid grid-cols-4 bg-slate-900/80 border-b border-slate-800 px-4 py-2">
+                                                  <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Elemento</span>
+                                                  <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Regla</span>
+                                                  <span className="text-emerald-400/70 text-xs font-bold uppercase tracking-widest">Correcto ✓</span>
+                                                  <span className="text-red-400/70 text-xs font-bold uppercase tracking-widest">Incorrecto ✗</span>
+                                             </div>
+                                             {DB_NAMING_POSTGRES.map((row, i) => (
+                                                  <div key={i} className="grid grid-cols-4 px-4 py-3 border-b border-slate-800/50 last:border-0 hover:bg-slate-900/30 transition-colors">
+                                                       <span className="text-xs font-semibold text-slate-300">{row.element}</span>
+                                                       <span className="text-slate-400 text-xs">{row.rule}</span>
+                                                       <span className="text-emerald-300 text-xs font-mono">{row.good}</span>
+                                                       <span className="text-red-400/70 text-xs font-mono line-through">{row.bad}</span>
+                                                  </div>
+                                             ))}
+                                        </div>
+                                   </div>
+
                               </motion.div>
                          )}
 
@@ -2211,7 +2246,6 @@ export default function Semester5() {
                                                   { name: "Spring Security", color: "text-amber-400 bg-amber-500/10 border-amber-500/25" },
                                                   { name: "RabbitMQ", color: "text-pink-400 bg-pink-500/10 border-pink-500/25" },
                                                   { name: "Resilience4j", color: "text-red-400 bg-red-500/10 border-red-500/25" },
-                                                  { name: "Flyway", color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/25" },
                                                   { name: "Lombok", color: "text-violet-400 bg-violet-500/10 border-violet-500/25" },
                                                   { name: "Maven", color: "text-yellow-400 bg-yellow-500/10 border-yellow-500/25" },
                                                   { name: "Docker", color: "text-sky-400 bg-sky-500/10 border-sky-500/25" },

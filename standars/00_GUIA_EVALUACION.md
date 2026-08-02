@@ -82,6 +82,7 @@ Estas violaciones descontarán puntos directamente del puntaje final, con indepe
 | Ausencia total de `.gitignore`                                      | −5 pts    |
 | Group ID incorrecto (no `pe.edu.vallegrande`)                       | −10 pts   |
 | Nombre de proyecto incorrecto (no sigue convención `vg-ms-*`)      | −5 pts    |
+| Tabla, columna, colección o entidad con nombre en español o mixto (no inglés) | −10 pts |
 
 ---
 

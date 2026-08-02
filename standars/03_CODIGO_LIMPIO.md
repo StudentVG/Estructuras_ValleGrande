@@ -20,6 +20,8 @@
 
 ## 1. Nomenclatura de Identificadores
 
+**Regla crítica — validación principal del bot:** toda clase, método, variable, archivo y package/módulo debe nombrarse en **inglés**, en todos los semestres. Igual que en base de datos (`05_BASE_DATOS.md`, sección 2.0), no se acepta español ni mezcla de idiomas — el dominio se traduce (`Client`, `Enrollment`, `AcademicPeriod`), no se deja en español (`Cliente`, `Matricula`).
+
 ### Convenciones por lenguaje
 
 | Elemento          | Java / Kotlin       | Python            | TypeScript / JS   |
@@ -338,7 +340,7 @@ for (Client c : clients) { ... }
 // TEMP: remove after testing
 
 // BIEN — si es un TODO real con fecha y responsable, usar el formato estándar:
-// TODO(juan.perez): Remove after migration to Flyway completes — deadline 2025-08-01
+// TODO(juan.perez): Remove after cache layer migration completes — deadline 2025-08-01
 ```
 
 ---

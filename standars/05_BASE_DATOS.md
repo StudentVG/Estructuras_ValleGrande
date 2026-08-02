@@ -31,6 +31,28 @@
 
 ## 2. Convenciones SQL (MySQL, SQL Server, PostgreSQL, Oracle, SQLite)
 
+### 2.0 Idioma obligatorio: Inglés
+
+**Regla crítica — validación principal del bot:** todo nombre de tabla, columna, colección, entidad, DTO y campo debe estar en **inglés**, sin excepción, en todos los semestres (II a V·VI) y en todos los motores de base de datos. No se acepta español ni mezcla de ambos idiomas.
+
+**Por qué:** es el estándar de la industria, evita problemas de codificación con tildes/`ñ` en distintos motores, y mantiene consistencia con el código Java/Python que ya se escribe en inglés (`Client`, `ClientDto`, `full_name`).
+
+Glosario de términos de dominio frecuentes (español → inglés) para no traducir mal:
+
+| Español | Inglés | Español | Inglés |
+| --- | --- | --- | --- |
+| cliente | `client` | matrícula | `enrollment` |
+| usuario | `user` | periodo académico | `academic_period` |
+| estudiante | `student` | curso | `course` |
+| docente / profesor | `teacher` | calificación | `grade` |
+| organización | `organization` | asistencia | `attendance` |
+| rol | `role` | pago / cuota | `payment` / `installment` |
+| producto | `product` | comprobante | `receipt` |
+| pedido / orden | `order` | estado | `status` |
+| dirección | `address` | notificación | `notification` |
+
+**Violación crítica detectable por el bot:** cualquier tabla, columna o entidad con nombre en español (`clientes`, `usuarios`, `nombre_completo`) descuenta puntos directamente — ver `00_GUIA_EVALUACION.md`, sección de descuentos automáticos.
+
 ### 2.1 Nombres de tablas
 
 | Regla                             | Correcto             | Incorrecto              |
@@ -39,7 +61,7 @@
 | Plural                            | `clients`            | `client`, `Cliente`     |
 | Minúsculas                        | `enrollment_periods` | `EnrollmentPeriods`     |
 | Sin prefijo de tipo               | `users`              | `tbl_users`, `tb_users` |
-| Español o inglés (consistente)    | `usuarios` ó `users` | mezclar ambos           |
+| Siempre en inglés (ver 2.0)       | `users`              | `usuarios`, `clientes`  |
 
 ### 2.2 Nombres de columnas
 
@@ -48,7 +70,7 @@
 | `snake_case`                      | `first_name`         | `firstName`, `FirstName`|
 | Singular                          | `status`             | `statuses`              |
 | Foreign key: `{tabla_singular}_id`| `organization_id`    | `orgId`, `idOrg`        |
-| Booleanos: prefijo `is_` ó `has_` | `is_active`          | `active`, `activo`      |
+| Booleanos (dominio, no ciclo de vida): prefijo `is_` ó `has_` | `is_verified` | `active`, `activo`, `is_active` junto a `status` (ver 2.4.1) |
 
 ### 2.3 Primary Keys
 
@@ -72,7 +94,58 @@ Todo modelo de datos debe incluir campos de auditoría para trazabilidad:
 | `id`         | BIGINT / ObjectId       | Clave primaria                       |
 | `created_at` | TIMESTAMP / DATETIME    | Fecha de creación (automático)       |
 | `updated_at` | TIMESTAMP / DATETIME    | Fecha de última modificación         |
-| `status`     | CHAR(1) ó VARCHAR(1)   | Estado: `'A'` = activo, `'I'` = inactivo |
+| `status`     | CHAR(1) ó VARCHAR(1)   | Estado del ciclo de vida del registro (ver 2.4.1) |
+
+### 2.4.1 Manejo de Estados — Regla Única y Obligatoria
+
+**Esta es la validación crítica que más se confunde. Hay una sola forma correcta, sin excepciones, en todos los semestres y motores.**
+
+**Regla:** el **ciclo de vida del registro** (¿existe o fue borrado lógicamente?) se representa **siempre** con la columna/campo `status`, nunca con un booleano. Un booleano (`is_x` / `has_x`) se reserva **exclusivamente** para atributos de dominio independientes del ciclo de vida (`is_verified`, `has_paid_fees`, `is_featured`). Nunca coexisten `status` y un booleano de tipo `is_active`/`is_deleted` para lo mismo — eso duplica la fuente de verdad y permite estados contradictorios (`is_active = true` pero `status = 'I'`).
+
+| Por qué NO un booleano para el ciclo de vida | Por qué SÍ `status` |
+| ---------------------------------------------- | --------------------------------------------- |
+| Un booleano solo modela 2 estados. El día que se necesite `PENDING`, `SUSPENDED`, `BANNED`, `ARCHIVED`, hay que migrar el schema (romper el contrato) | `status` ya soporta N valores sin tocar el tipo de columna |
+| Dos columnas para la misma idea (`is_active` + `status`) violan **single source of truth** (Clean Code) — pueden quedar desincronizadas | Una sola columna, un solo lugar donde se decide si el registro está vivo |
+| `is_deleted = true` es ambiguo con borrado lógico real vs. otros tipos de baja (ej. baja administrativa vs. autoeliminación) | El valor de `status` documenta explícitamente el motivo del estado |
+
+**Tipo de columna por motor:**
+
+| Motor                          | Tipo de columna         | Valores válidos                          |
+| ------------------------------ | ------------------------ | ------------------------------------------ |
+| MySQL / SQL Server / Oracle / SQLite | `CHAR(1)`           | `'A'` (activo) / `'I'` (inactivo)          |
+| PostgreSQL                     | `CHAR(1)` ó `VARCHAR(20)` si hay más de 2 estados | `'A'` / `'I'`, o `'PENDING'`, `'SUSPENDED'`, etc. |
+| MongoDB                        | `String`                 | `"A"` / `"I"` (mismo valor, sin comillas simples) |
+
+**Regla para más de 2 estados:** si el dominio requiere más de activo/inactivo (ej. una orden con `PENDING`, `PAID`, `CANCELLED`), no se reutiliza `status` para eso — se crea una columna de dominio propia (`order_status`, `payment_status`) con su propio enum documentado, y `status` se mantiene aparte solo para el ciclo de vida del registro (borrado lógico).
+
+**Mapeo obligatorio en el código (evita "primitive obsession" — Clean Code):** el campo `status` nunca se compara contra el string/char mágico directamente en la lógica de negocio; se mapea a un enum o constante nombrada.
+
+```java
+// MAL — magic string disperso en el código
+if (client.getStatus().equals("A")) { ... }
+
+// BIEN — enum con intención explícita
+public enum RecordStatus {
+    ACTIVE("A"), INACTIVE("I");
+    private final String code;
+    RecordStatus(String code) { this.code = code; }
+    public String code() { return code; }
+}
+
+if (client.getStatus().equals(RecordStatus.ACTIVE.code())) { ... }
+```
+
+```python
+# MAL
+if client["status"] == "A": ...
+
+# BIEN
+class RecordStatus:
+    ACTIVE = "A"
+    INACTIVE = "I"
+
+if client["status"] == RecordStatus.ACTIVE: ...
+```
 
 **Regla:** No eliminar registros físicamente (`DELETE`). Usar borrado lógico con `status = 'I'`.
 
@@ -207,11 +280,9 @@ spring:
     url: r2dbc:postgresql://localhost:5432/vg_nombre_db
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-  flyway:
-    enabled: true
-    url: jdbc:postgresql://localhost:5432/vg_nombre_db
-    user: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+  sql:
+    init:
+      mode: always      # ejecuta schema.sql al iniciar
 server:
   port: 8080
 ```
@@ -309,25 +380,21 @@ public class Client {
 
 ---
 
-## 5. Migraciones SQL — Flyway (Obligatorio en V·VI)
+## 5. Script SQL del Proyecto
 
-### Convención de nombres de scripts
+### Convención de nombres
+
+Cada proyecto mantiene un único script `schema.sql` en `src/main/resources/` (Java) o en la raíz del proyecto (Python) con la definición completa de tablas e índices.
 
 ```
-src/main/resources/db/migration/
-├── V1__create_schema.sql
-├── V2__create_users_table.sql
-├── V3__create_organizations_table.sql
-├── V4__add_status_to_users.sql
-└── V5__create_indexes.sql
+src/main/resources/
+└── schema.sql
 ```
 
-**Formato obligatorio:** `V{número}__{descripción_en_snake_case}.sql`
-
-### Ejemplo de script Flyway
+### Ejemplo de script
 
 ```sql
--- V2__create_users_table.sql
+-- schema.sql
 CREATE TABLE users (
     id          BIGSERIAL       PRIMARY KEY,
     full_name   VARCHAR(100)    NOT NULL,
@@ -343,10 +410,7 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_org_id ON users(org_id);
 ```
 
-**Reglas de Flyway:**
-- Scripts de migración son **inmutables** — nunca modificar un script ya ejecutado
-- Para corregir, crear un nuevo script con versión superior
-- El `ddl-auto` debe ser `validate` o `none` cuando Flyway está activo (no `update`)
+**Regla:** `ddl-auto` en `application.yaml` debe ser `update` (nunca `create-drop` en un entorno compartido) para que Hibernate mantenga el schema sincronizado con las entidades.
 
 ---
 
@@ -443,6 +507,7 @@ class Client(db.Model):
 
 ## 8. Checklist de Base de Datos
 
+- [ ] Todo nombre de tabla, columna, colección y entidad está en **inglés** (ver 2.0)
 - [ ] Tablas en `snake_case` plural
 - [ ] Columnas en `snake_case` singular
 - [ ] PK siempre llamada `id`
@@ -451,6 +516,6 @@ class Client(db.Model):
 - [ ] Borrado lógico (`status = 'I'`), no `DELETE` físico
 - [ ] Credenciales en variables de entorno, no hardcodeadas
 - [ ] Índices en columnas de búsqueda frecuente
-- [ ] Scripts Flyway en `resources/db/migration/` (V·VI)
+- [ ] Script `schema.sql` en `resources/` con la definición de tablas e índices
 - [ ] `@Entity` + JPA ausente en proyectos WebFlux
 - [ ] `@Table` de Spring Data (no JPA) en proyectos R2DBC

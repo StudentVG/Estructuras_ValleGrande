@@ -140,13 +140,43 @@ const WEBFLUX_YAML_MONGO = `spring:
 server:
   port: 8080`;
 
+const DB_NAMING_ORACLE = [
+     { element: "Tablas", rule: "snake_case · plural · inglés", good: "clients", bad: "Client, tbl_clientes" },
+     { element: "Columnas", rule: "snake_case · inglés", good: "full_name, created_at", bad: "fullName, fch_creacion" },
+     { element: "Primary Key", rule: "siempre id", good: "id NUMBER(19)", bad: "id_cliente, clientId" },
+     { element: "Estado lógico", rule: "columna status · CHAR(1)", good: "status ('A' / 'I')", bad: "estado, is_deleted" },
+];
+
+const DB_NAMING_MONGO_R2DBC = [
+     { element: "Colecciones", rule: "snake_case · plural · inglés", good: "clients", bad: "Client, tblClients" },
+     { element: "Campos", rule: "camelCase · inglés", good: "fullName, createdAt", bad: "full_name, nombreCompleto" },
+     { element: "Primary Key", rule: "auto-generado _id", good: "_id (ObjectId)", bad: "id manual como PK" },
+     { element: "Estado lógico", rule: "campo status · String", good: "status ('A' / 'I')", bad: "estado, isDeleted" },
+];
+
+const ORACLE_TABLE_SQL = `-- schema.sql (Oracle)
+CREATE TABLE clients (
+    id          NUMBER(19)    GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    full_name   VARCHAR2(100) NOT NULL,
+    email       VARCHAR2(150) NOT NULL UNIQUE,
+    status      CHAR(1)       DEFAULT 'A' NOT NULL,
+    created_at  TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL,
+    updated_at  TIMESTAMP     DEFAULT SYSTIMESTAMP NOT NULL
+);`;
+
 const WEBFLUX_SNIPPET_ORACLE = `// model/Client.java
-@Table("clients")
+@Table("clients")                       // tabla: snake_case, plural, inglés
 public class Client {
     @Id
-    private Long id;
-    private String name;
+    private Long id;                    // PK: siempre "id"
+
+    @Column("full_name")
+    private String fullName;            // columna snake_case ↔ campo Java camelCase
+
     private String email;
+    private String status;              // 'A' activo / 'I' inactivo (soft delete)
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
 
 // repository/ClientRepository.java
@@ -186,13 +216,27 @@ public class ClientRest {
     @DeleteMapping("/{id}") public Mono<Void>   delete(@PathVariable Long id)       { return svc.delete(id); }
 }`;
 
+const MONGO_R2DBC_EXAMPLE = `// Documento MongoDB — colección "clients"
+{
+  "_id": ObjectId("..."),
+  "fullName": "Ana Torres",     // campo: camelCase, inglés
+  "email": "ana@example.com",
+  "status": "A",                // 'A' activo / 'I' inactivo
+  "createdAt": ISODate("..."),
+  "updatedAt": ISODate("...")
+}`;
+
 const WEBFLUX_SNIPPET_MONGO = `// model/Client.java
-@Document("clients")
+@Document("clients")                    // colección: snake_case, plural, inglés
 public class Client {
     @Id
-    private ObjectId id;
-    private String name;
+    private ObjectId id;                // _id auto-generado
+
+    private String fullName;            // campo Mongo: camelCase, inglés
     private String email;
+    private String status;              // 'A' activo / 'I' inactivo (soft delete)
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
 
 // repository/ClientRepository.java
@@ -362,6 +406,23 @@ const PYTHON_BE_STRUCTURE = `vg-ms-{nombre}-be/
 ├── README.md
 ├── requirements.txt           ← pip freeze > requirements.txt
 └── run.py                     ← Punto de entrada: python run.py`;
+
+const DB_NAMING_SQLITE = [
+     { element: "Tablas", rule: "snake_case · plural · inglés", good: "clients", bad: "Client, tbl_clientes" },
+     { element: "Columnas", rule: "snake_case · inglés", good: "full_name, created_at", bad: "fullName, nombre" },
+     { element: "Primary Key", rule: "siempre id", good: "id INTEGER AUTOINCREMENT", bad: "id_cliente" },
+     { element: "Estado lógico", rule: "columna status · TEXT(1)", good: "status ('A' / 'I')", bad: "estado, activo" },
+];
+
+const SQLITE_TABLE_SQL = `-- schema.sql (SQLite)
+CREATE TABLE clients (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name   TEXT    NOT NULL,
+    email       TEXT    NOT NULL UNIQUE,
+    status      TEXT    NOT NULL DEFAULT 'A',
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);`;
 
 const PYTHON_BE_SNIPPET = `# app/settings.py
 import os
@@ -790,6 +851,32 @@ export default function Semester4() {
                               </div>
 
                               <div>
+                                   <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-1 h-5 bg-red-500 rounded-full" />
+                                        <h2 className="text-white font-bold text-lg">Base de datos — Nomenclatura {dbChoice === "mongo" ? "MongoDB" : "Oracle"}</h2>
+                                        <span className="bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest">Inglés obligatorio</span>
+                                   </div>
+                                   <p className="text-slate-500 text-sm mb-4 max-w-2xl">Ver estándar completo en <span className="text-teal-400 font-medium">Convenciones → Base de Datos</span>.</p>
+                                   <div className="rounded-2xl border border-slate-800 overflow-hidden mb-6">
+                                        <div className="grid grid-cols-4 bg-slate-900/80 border-b border-slate-800 px-4 py-2">
+                                             <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Elemento</span>
+                                             <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Regla</span>
+                                             <span className="text-emerald-400/70 text-xs font-bold uppercase tracking-widest">Correcto ✓</span>
+                                             <span className="text-red-400/70 text-xs font-bold uppercase tracking-widest">Incorrecto ✗</span>
+                                        </div>
+                                        {(dbChoice === "mongo" ? DB_NAMING_MONGO_R2DBC : DB_NAMING_ORACLE).map((row, i) => (
+                                             <div key={i} className="grid grid-cols-4 px-4 py-3 border-b border-slate-800/50 last:border-0 hover:bg-slate-900/30 transition-colors">
+                                                  <span className="text-xs font-semibold text-slate-300">{row.element}</span>
+                                                  <span className="text-slate-400 text-xs">{row.rule}</span>
+                                                  <span className="text-emerald-300 text-xs font-mono">{row.good}</span>
+                                                  <span className="text-red-400/70 text-xs font-mono line-through">{row.bad}</span>
+                                             </div>
+                                        ))}
+                                   </div>
+                                   <CodeBlock filename={dbChoice === "mongo" ? "documento — clients" : "schema.sql"} code={dbChoice === "mongo" ? MONGO_R2DBC_EXAMPLE : ORACLE_TABLE_SQL} lang={dbChoice === "mongo" ? "json" : "sql"} />
+                              </div>
+
+                              <div>
                                    <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">Dependencias en Spring Initializr</p>
                                    <div className="flex flex-wrap gap-2">
                                         {(dbChoice === "mongo" ? WEBFLUX_DEPS_MONGO : WEBFLUX_DEPS_ORACLE).map((d) => (
@@ -852,6 +939,32 @@ export default function Semester4() {
                                         <h2 className="text-white font-bold text-lg">Código del backend — patrón por capas</h2>
                                    </div>
                                    <CodeBlock filename="settings.py · {entidad}_service.py · {entidad}_routes.py · run.py" code={PYTHON_BE_SNIPPET} lang="python" />
+                              </div>
+
+                              <div>
+                                   <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-1 h-5 bg-red-500 rounded-full" />
+                                        <h2 className="text-white font-bold text-lg">Base de datos — Nomenclatura SQLite</h2>
+                                        <span className="bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest">Inglés obligatorio</span>
+                                   </div>
+                                   <p className="text-slate-500 text-sm mb-4 max-w-2xl">Ver estándar completo en <span className="text-teal-400 font-medium">Convenciones → Base de Datos</span>.</p>
+                                   <div className="rounded-2xl border border-slate-800 overflow-hidden mb-6">
+                                        <div className="grid grid-cols-4 bg-slate-900/80 border-b border-slate-800 px-4 py-2">
+                                             <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Elemento</span>
+                                             <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Regla</span>
+                                             <span className="text-emerald-400/70 text-xs font-bold uppercase tracking-widest">Correcto ✓</span>
+                                             <span className="text-red-400/70 text-xs font-bold uppercase tracking-widest">Incorrecto ✗</span>
+                                        </div>
+                                        {DB_NAMING_SQLITE.map((row, i) => (
+                                             <div key={i} className="grid grid-cols-4 px-4 py-3 border-b border-slate-800/50 last:border-0 hover:bg-slate-900/30 transition-colors">
+                                                  <span className="text-xs font-semibold text-slate-300">{row.element}</span>
+                                                  <span className="text-slate-400 text-xs">{row.rule}</span>
+                                                  <span className="text-emerald-300 text-xs font-mono">{row.good}</span>
+                                                  <span className="text-red-400/70 text-xs font-mono line-through">{row.bad}</span>
+                                             </div>
+                                        ))}
+                                   </div>
+                                   <CodeBlock filename="schema.sql" code={SQLITE_TABLE_SQL} lang="sql" />
                               </div>
 
                               <div>

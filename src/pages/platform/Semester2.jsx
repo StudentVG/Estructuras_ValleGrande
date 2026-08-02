@@ -171,6 +171,81 @@ const TIPS = [
      { icon: "🎨", title: "Tailwind por CDN solo para prácticas", desc: "El CDN es rápido para el semestre, pero en un proyecto real conviene instalar Tailwind vía npm para purgar CSS no usado." },
 ];
 
+const DB_NAMING_MYSQL = [
+     { element: "Tablas", rule: "snake_case · plural · inglés", good: "clients, products", bad: "Cliente, tbl_clientes" },
+     { element: "Columnas", rule: "snake_case · inglés", good: "full_name, created_at", bad: "nombreCompleto, fch_creacion" },
+     { element: "Primary Key", rule: "siempre id", good: "id INT AUTO_INCREMENT", bad: "id_cliente, idCliente" },
+     { element: "Booleanos (dominio, no ciclo de vida)", rule: "prefijo is_ / has_", good: "is_verified", bad: "is_active junto a status" },
+     { element: "Estado lógico", rule: "columna status · CHAR(1) — única fuente de verdad", good: "status ('A' / 'I')", bad: "estado, activo, is_active" },
+];
+
+const ENTITY_MYSQL_TABLE = `-- schema.sql (MySQL)
+CREATE TABLE clients (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    full_name   VARCHAR(100) NOT NULL,
+    email       VARCHAR(150) NOT NULL UNIQUE,
+    status      CHAR(1)      NOT NULL DEFAULT 'A',   -- único campo del ciclo de vida
+    created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);`;
+
+const ENTITY_MYSQL_JAVA = `// model/Client.java — clase de dominio (POJO)
+public class Client {
+    private Long id;
+    private String fullName;      // campo Java: camelCase
+    private String email;
+    private String status;        // único campo del ciclo de vida: 'A' activo / 'I' inactivo
+
+    // getters, setters, constructores
+}
+
+// dao/ClientDAO.java — acceso a datos con JDBC
+public class ClientDAO {
+
+    public List<Client> findAllActive() throws SQLException {
+        String sql = "SELECT * FROM clients WHERE status = ?";
+        List<Client> clients = new ArrayList<>();
+        try (Connection conn = AccessDB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, "A");
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Client c = new Client();
+                    c.setId(rs.getLong("id"));
+                    c.setFullName(rs.getString("full_name"));   // snake_case → camelCase
+                    c.setEmail(rs.getString("email"));
+                    c.setStatus(rs.getString("status"));
+                    clients.add(c);
+                }
+            }
+        }
+        return clients;
+    }
+}`;
+
+const ENTITY_MYSQL_PYTHON = `# app/models/client.py — SQLAlchemy
+from app.database import db
+
+class Client(db.Model):
+    __tablename__ = 'clients'          # tabla: snake_case, plural, inglés
+
+    id         = db.Column(db.Integer, primary_key=True)
+    full_name  = db.Column(db.String(100), nullable=False)
+    email      = db.Column(db.String(150), unique=True, nullable=False)
+    status     = db.Column(db.String(1), default='A')   # único campo del ciclo de vida: 'A' activo / 'I' inactivo
+    created_at = db.Column(db.DateTime, default=db.func.now())
+    updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
+
+
+# app/services/client_service.py
+def get_all_active():
+    return Client.query.filter_by(status='A').all()
+
+def deactivate(client_id):
+    client = Client.query.get(client_id)
+    client.status = 'I'              # soft delete: nunca DELETE físico
+    db.session.commit()`;
+
 function FileIcon({ name, accentColor }) {
      const clean = name.replace(/\s*←.*$/, '').trim();
      const isDir = clean.endsWith('/');
@@ -510,6 +585,74 @@ export default function Semester2() {
                               <span className="text-slate-500 text-xs font-mono ml-2">estructura-flask/</span>
                          </div>
                          <FileTree content={FLASK_STRUCTURE} accentColor="violet" />
+                    </div>
+               </motion.div>
+
+               <motion.div custom={4.5} variants={fadeUp} initial="hidden" animate="show">
+                    <div className="flex items-center gap-3 mb-2">
+                         <div className="w-1 h-5 bg-cyan-500 rounded-full" />
+                         <h2 className="text-white font-bold text-lg">Base de datos — Nomenclatura MySQL y ejemplo</h2>
+                         <span className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest">
+                              Inglés obligatorio
+                         </span>
+                    </div>
+                    <p className="text-slate-500 text-sm mb-5 leading-relaxed max-w-2xl">
+                         Toda tabla y columna de MySQL se nombra en <span className="text-cyan-400 font-medium">inglés</span>, en <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">snake_case</code>. Ver estándar completo en <span className="text-teal-400 font-medium">Convenciones → Base de Datos</span>.
+                    </p>
+                    <div className="rounded-2xl border border-slate-800 overflow-hidden mb-6">
+                         <div className="grid grid-cols-4 bg-slate-900/80 border-b border-slate-800 px-4 py-2">
+                              <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Elemento</span>
+                              <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Regla</span>
+                              <span className="text-emerald-400/70 text-xs font-bold uppercase tracking-widest">Correcto ✓</span>
+                              <span className="text-red-400/70 text-xs font-bold uppercase tracking-widest">Incorrecto ✗</span>
+                         </div>
+                         {DB_NAMING_MYSQL.map((row, i) => (
+                              <div key={i} className="grid grid-cols-4 px-4 py-3 border-b border-slate-800/50 last:border-0 hover:bg-slate-900/30 transition-colors">
+                                   <span className="text-xs font-semibold text-slate-300">{row.element}</span>
+                                   <span className="text-slate-400 text-xs">{row.rule}</span>
+                                   <span className="text-emerald-300 text-xs font-mono">{row.good}</span>
+                                   <span className="text-red-400/70 text-xs font-mono line-through">{row.bad}</span>
+                              </div>
+                         ))}
+                    </div>
+
+                    <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">Script de tabla — MySQL</p>
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden mb-6">
+                         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+                              <div className="flex gap-1.5">
+                                   <span className="w-3 h-3 rounded-full bg-red-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-green-500/60" />
+                              </div>
+                              <span className="text-slate-500 text-xs font-mono ml-2">schema.sql</span>
+                         </div>
+                         <pre className="text-xs font-mono leading-relaxed p-5 overflow-x-auto text-slate-300 whitespace-pre">{ENTITY_MYSQL_TABLE}</pre>
+                    </div>
+
+                    <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">Track Desktop — Java + JDBC</p>
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden mb-6">
+                         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+                              <div className="flex gap-1.5">
+                                   <span className="w-3 h-3 rounded-full bg-red-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-green-500/60" />
+                              </div>
+                              <span className="text-slate-500 text-xs font-mono ml-2">model/Client.java · dao/ClientDAO.java</span>
+                         </div>
+                         <pre className="text-xs font-mono leading-relaxed p-5 overflow-x-auto text-slate-300 whitespace-pre">{ENTITY_MYSQL_JAVA}</pre>
+                    </div>
+
+                    <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">Track Web — Python + SQLAlchemy</p>
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+                              <div className="flex gap-1.5">
+                                   <span className="w-3 h-3 rounded-full bg-red-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-green-500/60" />
+                              </div>
+                              <span className="text-slate-500 text-xs font-mono ml-2">app/models/client.py · app/services/client_service.py</span>
+                         </div>
+                         <pre className="text-xs font-mono leading-relaxed p-5 overflow-x-auto text-slate-300 whitespace-pre">{ENTITY_MYSQL_PYTHON}</pre>
                     </div>
                </motion.div>
 

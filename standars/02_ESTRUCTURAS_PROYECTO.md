@@ -927,9 +927,7 @@ vg-ms-{nombre}/
 │
 ├── src/main/resources/
 │   ├── application.yaml
-│   └── db/migration/              ← OBLIGATORIO con Flyway
-│       ├── V1__create_schema.sql
-│       └── V2__create_{entidad}_table.sql
+│   └── schema.sql                 ← definición de tablas e índices
 │
 └── pom.xml
 ```
@@ -997,8 +995,7 @@ vg-ms-{nombre}/
 | `@Table` en `domain/model/`                              | Infra en capa de dominio               |
 | `import org.springframework.*` en `domain/`              | Framework en capa de dominio           |
 | `@RestController` fuera de `infrastructure/adapters/in/` | Capa de entrega en dominio/aplicación  |
-| Sin `db/migration/V*.sql`                                 | Sin Flyway                             |
-| `ddl-auto: create` ó `update` con Flyway activo          | DDL automático incompatible con Flyway |
+| Sin `resources/schema.sql`                                | Falta script de definición de tablas   |
 | Sin `event/` y sin `client/`                             | Microservicio no integrado al ecosistema|
 | `@Autowired` en campos (no constructor injection)        | Inyección no recomendada               |
 

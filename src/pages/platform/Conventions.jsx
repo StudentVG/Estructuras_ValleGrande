@@ -24,7 +24,7 @@ const DB_NAMING_SQL = [
      { element: "Índices", rule: "idx_{tabla}_{columna}", good: "idx_clients_email", bad: "index1, clientEmailIdx", color: "text-violet-400" },
      { element: "Unique", rule: "uk_{tabla}_{columna}", good: "uk_clients_email", bad: "unique_email, uq1", color: "text-blue-400" },
      { element: "Check", rule: "chk_{tabla}_{regla}", good: "chk_clients_age", bad: "check1, ageCheck", color: "text-orange-400" },
-     { element: "Booleanos", rule: "Prefijo is_ o has_", good: "is_active, has_payment", bad: "active, activo, estado_bool", color: "text-green-400" },
+     { element: "Booleanos (dominio, no ciclo de vida)", rule: "Prefijo is_ o has_", good: "is_verified, has_paid", bad: "is_active junto a status, verificado", color: "text-green-400" },
      { element: "Timestamps", rule: "created_at, updated_at, deleted_at", good: "created_at", bad: "fecha_creacion, createdAt, fch_crea", color: "text-cyan-400" },
      { element: "Estado lógico", rule: "Columna status — char(1)", good: "status ('A'=activo, 'I'=inactivo)", bad: "estado, activo, is_deleted", color: "text-rose-400" },
 ];
@@ -36,18 +36,32 @@ const DB_NAMING_MONGO = [
      { element: "Primary Key", rule: "Auto-generado _id", good: "_id (ObjectId)", bad: "id, clientId como PK manual", color: "text-amber-400" },
      { element: "Referencia FK", rule: "camelCase · sufijo Id", good: "clientId, orderId", bad: "client_id, fk_client, id_cliente", color: "text-pink-400" },
      { element: "Índices", rule: "idx_{coleccion}_{campo}", good: "idx_clients_email", bad: "index1, emailIndex", color: "text-violet-400" },
-     { element: "Booleanos", rule: "Prefijo is o has", good: "isActive, hasPayment", bad: "active, activo, estado_bool", color: "text-green-400" },
+     { element: "Booleanos (dominio, no ciclo de vida)", rule: "Prefijo is o has", good: "isVerified, hasPaid", bad: "isActive junto a status, verificado", color: "text-green-400" },
      { element: "Timestamps", rule: "createdAt, updatedAt", good: "createdAt", bad: "fecha_creacion, created_at", color: "text-cyan-400" },
      { element: "Estado lógico", rule: "Campo status — string", good: "status ('A', 'I')", bad: "estado, activo, isDeleted", color: "text-rose-400" },
 ];
 
+const DB_LANGUAGE_GLOSSARY = [
+     { es: "cliente", en: "client", es2: "matrícula", en2: "enrollment" },
+     { es: "usuario", en: "user", es2: "periodo académico", en2: "academic_period" },
+     { es: "estudiante", en: "student", es2: "curso", en2: "course" },
+     { es: "docente / profesor", en: "teacher", es2: "calificación", en2: "grade" },
+     { es: "organización", en: "organization", es2: "asistencia", en2: "attendance" },
+     { es: "rol", en: "role", es2: "pago / cuota", en2: "payment / installment" },
+     { es: "producto", en: "product", es2: "comprobante", en2: "receipt" },
+     { es: "pedido / orden", en: "order", es2: "estado", en2: "status" },
+     { es: "dirección", en: "address", es2: "notificación", en2: "notification" },
+];
+
 const DB_GENERAL_RULES = [
+     { rule: "Todo nombre en inglés — nunca en español ni mezclado", detail: "Tablas, columnas, colecciones, índices y constraints siempre en inglés. Es la validación principal del bot de code review: clientes, usuarios, fch_creacion descuentan puntos directamente." },
      { rule: "Nunca usar camelCase en tablas o columnas SQL", detail: "Java usa camelCase, la BD usa snake_case. JPA/Hibernate mapea automáticamente con @Column si es necesario." },
      { rule: "Nunca usar palabras reservadas como nombre", detail: "Prohibido: order, user, table, index, group, select. Usar: orders, users, etc." },
      { rule: "Prefijo vg_ solo en el nombre de la base de datos", detail: "Las tablas/colecciones NO llevan prefijo. Nada de tbl_clients ni col_users." },
      { rule: "Sin abreviaturas crípticas", detail: "Prohibido: cant, fch, nro, desc. Usar: quantity, date, number, description." },
      { rule: "Tablas siempre en plural", detail: "Una tabla almacena múltiples registros: clients, products, purchase_orders." },
      { rule: "Soft delete con columna status, no borrado físico", detail: "status = 'A' (activo) o 'I' (inactivo). Nunca DELETE FROM real en producción." },
+     { rule: "El ciclo de vida del registro SIEMPRE usa status, nunca un booleano", detail: "Prohibido is_active / is_deleted junto a status — duplica la fuente de verdad y permite estados contradictorios. Booleanos is_/has_ son solo para atributos de dominio (is_verified, has_paid), nunca para saber si el registro está activo." },
      { rule: "Timestamps obligatorios en toda tabla", detail: "Toda tabla debe tener created_at y updated_at. Considerar deleted_at si aplica soft delete por fecha." },
      { rule: "Mapeo Java ↔ BD consistente", detail: "Java: firstName (camelCase) → BD SQL: first_name (snake_case). En Mongo el campo ya es camelCase." },
 ];
@@ -64,8 +78,8 @@ public class Client {            // clase: PascalCase, singular
     @Column(name = "first_name") // columna: snake_case
     private String firstName;    // campo Java: camelCase
 
-    @Column(name = "is_active")
-    private Boolean isActive;    // booleano: prefijo is_
+    @Column(length = 1, columnDefinition = "CHAR(1) DEFAULT 'A'")
+    private String status;       // único campo del ciclo de vida: 'A' activo / 'I' inactivo
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -87,8 +101,7 @@ public class Client {              // clase: PascalCase, singular
 
     private String firstName;      // campo Mongo: camelCase (igual que Java)
     private String email;
-    private Boolean isActive;      // booleano: prefijo is
-    private String status;         // estado lógico: "A" o "I"
+    private String status;         // único campo del ciclo de vida: "A" activo / "I" inactivo
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -357,6 +370,25 @@ function DatabaseTab() {
 
      return (
           <div className="space-y-10">
+               <div className="rounded-2xl border border-teal-500/25 bg-teal-500/5 p-5">
+                    <div className="flex items-center gap-2 mb-2">
+                         <span className="text-teal-400 text-sm">🌐</span>
+                         <p className="text-teal-300 font-bold text-sm uppercase tracking-widest">Regla crítica — Idioma obligatorio: Inglés</p>
+                    </div>
+                    <p className="text-slate-400 text-sm leading-relaxed mb-4">
+                         Toda tabla, columna, colección, entidad y campo debe nombrarse en <span className="text-teal-300 font-semibold">inglés</span>, sin excepción, en todos los semestres (II al V·VI) y motores de base de datos. No se acepta español ni mezcla de ambos idiomas — es la validación principal que aplica el bot de code review.
+                    </p>
+                    <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-2">Glosario de dominio — español → inglés</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                         {DB_LANGUAGE_GLOSSARY.map((g, i) => (
+                              <div key={i} className="flex items-center justify-between gap-3 text-xs bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2">
+                                   <span className="text-slate-500">{g.es} → <span className="text-teal-300 font-mono">{g.en}</span></span>
+                                   <span className="text-slate-500">{g.es2} → <span className="text-teal-300 font-mono">{g.en2}</span></span>
+                              </div>
+                         ))}
+                    </div>
+               </div>
+
                <div>
                     <SectionHeader color="bg-teal-500" title="Motor de base de datos" />
                     <p className="text-slate-500 text-sm mb-4">Selecciona el motor para ver las convenciones de naming específicas.</p>
@@ -555,7 +587,7 @@ export default function Conventions() {
                          Base de Datos y Comentarios
                     </h1>
                     <p className="text-slate-400 text-base leading-relaxed max-w-2xl">
-                         Estándares de <span className="text-teal-400 font-semibold">nomenclatura de base de datos</span> (tablas, columnas, índices, constraints) y{" "}
+                         Estándares de <span className="text-teal-400 font-semibold">nomenclatura de base de datos en inglés</span> (tablas, columnas, índices, constraints) y{" "}
                          <span className="text-violet-400 font-semibold">comentarios en código</span> (Javadoc, docstrings, JSDoc) para todos los proyectos del semestre II al VI.
                     </p>
                </motion.div>

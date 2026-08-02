@@ -101,6 +101,67 @@ const APP_PROPERTIES = `spring:
 server:
   port: 8080`;
 
+const DB_NAMING_SQLSERVER = [
+     { element: "Tablas", rule: "snake_case · plural · inglés", good: "clients, purchase_orders", bad: "Client, tbl_Clientes" },
+     { element: "Columnas", rule: "snake_case · inglés", good: "full_name, created_at", bad: "FullName, fch_creacion" },
+     { element: "Primary Key", rule: "siempre id", good: "id BIGINT IDENTITY(1,1)", bad: "id_cliente, clientId" },
+     { element: "Foreign Key", rule: "{tabla_singular}_id", good: "organization_id", bad: "orgId, id_organizacion" },
+     { element: "Booleanos (dominio, no ciclo de vida)", rule: "prefijo is_ / has_ · tipo BIT", good: "is_verified", bad: "is_active junto a status" },
+     { element: "Estado lógico", rule: "columna status · CHAR(1) — única fuente de verdad", good: "status ('A' / 'I')", bad: "estado, is_deleted, is_active" },
+];
+
+const ENTITY_SQLSERVER_TABLE = `-- schema.sql (SQL Server)
+CREATE TABLE clients (
+    id              BIGINT IDENTITY(1,1) PRIMARY KEY,
+    full_name       VARCHAR(100)  NOT NULL,
+    email           VARCHAR(150)  NOT NULL UNIQUE,
+    status          CHAR(1)       NOT NULL DEFAULT 'A',   -- único campo del ciclo de vida
+    organization_id BIGINT        REFERENCES organizations(id),
+    created_at      DATETIME2     NOT NULL DEFAULT GETDATE(),
+    updated_at      DATETIME2     NOT NULL DEFAULT GETDATE()
+);`;
+
+const ENTITY_SQLSERVER_JAVA = `// model/Client.java — Entidad JPA mapeada a SQL Server
+@Entity
+@Table(name = "clients")              // tabla: snake_case, plural, inglés
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Client {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;                  // PK: siempre "id"
+
+    @Column(name = "full_name", nullable = false, length = 100)
+    private String fullName;          // columna snake_case ↔ campo Java camelCase
+
+    @Column(unique = true, nullable = false, length = 150)
+    private String email;
+
+    @Column(length = 1, columnDefinition = "CHAR(1) DEFAULT 'A'")
+    private String status;            // único campo del ciclo de vida: 'A' (activo) / 'I' (inactivo)
+
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "organization_id")   // FK: {tabla_singular}_id
+    private Organization organization;
+}
+
+// repository/ClientRepository.java
+public interface ClientRepository extends JpaRepository<Client, Long> {
+    Optional<Client> findByEmail(String email);
+    List<Client> findByStatus(String status);   // soft delete: solo status = 'A'
+}`;
+
 const ANGULAR_STRUCTURE = `mi-proyecto-frontend/          ← ng new mi-proyecto-frontend
 ├── src/
 │   ├── app/
@@ -660,6 +721,61 @@ export default function Semester3() {
                               <span className="text-slate-500 text-xs font-mono ml-2">estructura-spring-boot/</span>
                          </div>
                          <FileTree content={SPRING_STRUCTURE} accentColor="emerald" />
+                    </div>
+               </motion.div>
+
+               <motion.div custom={4.5} variants={fadeUp} initial="hidden" animate="show">
+                    <div className="flex items-center gap-3 mb-2">
+                         <div className="w-1 h-5 bg-red-500 rounded-full" />
+                         <h2 className="text-white font-bold text-lg">Base de datos — Nomenclatura y Entidad SQL Server</h2>
+                         <span className="bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest">
+                              Inglés obligatorio
+                         </span>
+                    </div>
+                    <p className="text-slate-500 text-sm mb-5 leading-relaxed max-w-2xl">
+                         Toda tabla y columna de SQL Server se nombra en <span className="text-red-400 font-medium">inglés</span>, en <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded text-xs">snake_case</code>. Ver estándar completo en <span className="text-teal-400 font-medium">Convenciones → Base de Datos</span>.
+                    </p>
+                    <div className="rounded-2xl border border-slate-800 overflow-hidden mb-6">
+                         <div className="grid grid-cols-4 bg-slate-900/80 border-b border-slate-800 px-4 py-2">
+                              <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Elemento</span>
+                              <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Regla</span>
+                              <span className="text-emerald-400/70 text-xs font-bold uppercase tracking-widest">Correcto ✓</span>
+                              <span className="text-red-400/70 text-xs font-bold uppercase tracking-widest">Incorrecto ✗</span>
+                         </div>
+                         {DB_NAMING_SQLSERVER.map((row, i) => (
+                              <div key={i} className="grid grid-cols-4 px-4 py-3 border-b border-slate-800/50 last:border-0 hover:bg-slate-900/30 transition-colors">
+                                   <span className="text-xs font-semibold text-slate-300">{row.element}</span>
+                                   <span className="text-slate-400 text-xs">{row.rule}</span>
+                                   <span className="text-emerald-300 text-xs font-mono">{row.good}</span>
+                                   <span className="text-red-400/70 text-xs font-mono line-through">{row.bad}</span>
+                              </div>
+                         ))}
+                    </div>
+
+                    <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">Script de tabla — SQL Server</p>
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden mb-6">
+                         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+                              <div className="flex gap-1.5">
+                                   <span className="w-3 h-3 rounded-full bg-red-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-green-500/60" />
+                              </div>
+                              <span className="text-slate-500 text-xs font-mono ml-2">src/main/resources/schema.sql</span>
+                         </div>
+                         <pre className="text-xs font-mono leading-relaxed p-5 overflow-x-auto text-slate-300 whitespace-pre">{ENTITY_SQLSERVER_TABLE}</pre>
+                    </div>
+
+                    <p className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">Entidad JPA + Repository — Java</p>
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-800">
+                              <div className="flex gap-1.5">
+                                   <span className="w-3 h-3 rounded-full bg-red-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                                   <span className="w-3 h-3 rounded-full bg-green-500/60" />
+                              </div>
+                              <span className="text-slate-500 text-xs font-mono ml-2">model/Client.java · repository/ClientRepository.java</span>
+                         </div>
+                         <pre className="text-xs font-mono leading-relaxed p-5 overflow-x-auto text-slate-300 whitespace-pre">{ENTITY_SQLSERVER_JAVA}</pre>
                     </div>
                </motion.div>
 
