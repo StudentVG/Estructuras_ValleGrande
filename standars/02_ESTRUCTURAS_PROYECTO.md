@@ -246,13 +246,17 @@ instance/
 ```
 vg-ms-{nombre}/
 │
+├── database/                                          ← OBLIGATORIO, FUERA de src/
+│   └── schema.sql                                     ← ver 05_BASE_DATOS.md sección 5
+│
 ├── src/
 │   ├── main/
 │   │   ├── java/
 │   │   │   └── pe/edu/vallegrande/vgms{nombre}/
 │   │   │       │
 │   │   │       ├── config/                            ← OBLIGATORIO
-│   │   │       │   └── CorsConfig.java                ← OBLIGATORIO, exactamente este nombre
+│   │   │       │   ├── CorsConfig.java                ← OBLIGATORIO, exactamente este nombre
+│   │   │       │   └── DatabaseConfig.java             ← OPCIONAL, solo si hay config custom de datasource
 │   │   │       │
 │   │   │       ├── rest/                              ← OBLIGATORIO (NO "controller/")
 │   │   │       │   └── {Entidad}Rest.java             ← sufijo obligatorio: Rest
@@ -268,7 +272,7 @@ vg-ms-{nombre}/
 │   │   │       ├── model/                             ← OBLIGATORIO
 │   │   │       │   └── {Entidad}.java                 ← sin sufijo, PascalCase
 │   │   │       │
-│   │   │       ├── dto/                               ← OBLIGATORIO
+│   │   │       ├── dto/                               ← OBLIGATORIO (muchas entidades: subcarpeta por entidad)
 │   │   │       │   └── {Entidad}Dto.java              ← sufijo: Dto
 │   │   │       │
 │   │   │       ├── exception/                         ← OBLIGATORIO
@@ -530,7 +534,7 @@ vg-ms-{nombre}/
 │   │   │       ├── model/
 │   │   │       │   └── {Entidad}.java             ← @Table (R2DBC) ó @Document (MongoDB)
 │   │   │       │                                  ← NUNCA @Entity aquí
-│   │   │       ├── dto/
+│   │   │       ├── dto/                            ← muchas entidades: subcarpeta por entidad
 │   │   │       │   └── {Entidad}Dto.java
 │   │   │       │
 │   │   │       ├── exception/
@@ -922,7 +926,7 @@ vg-ms-{nombre}/
 │   ├── model/
 │   │   └── {Entidad}.java         ← @Table (R2DBC PostgreSQL)
 │   │
-│   ├── dto/
+│   ├── dto/                       ← muchas entidades: subcarpeta por entidad
 │   │   ├── {Entidad}Request.java  ← validaciones @NotBlank, @Email
 │   │   └── {Entidad}Response.java ← sin campos sensibles
 │   │
@@ -975,7 +979,7 @@ vg-ms-{nombre}/
 │   ├── application/               ← CAPA DE APLICACIÓN — usa interfaces del dominio
 │   │   ├── usecases/
 │   │   │   └── {Entidad}UseCaseImpl.java   ← implementa I{Entidad}UseCase
-│   │   ├── dto/
+│   │   ├── dto/                    ← muchas entidades: subcarpeta por entidad
 │   │   │   ├── {Entidad}Request.java
 │   │   │   └── {Entidad}Response.java
 │   │   ├── events/
@@ -1012,7 +1016,7 @@ vg-ms-{nombre}/
 | `@Table` en `domain/model/`                              | Infra en capa de dominio               |
 | `import org.springframework.*` en `domain/`              | Framework en capa de dominio           |
 | `@RestController` fuera de `infrastructure/adapters/in/` | Capa de entrega en dominio/aplicación  |
-| Sin `resources/schema.sql`                                | Falta script de definición de tablas   |
+| Sin `database/schema.sql` (fuera de `src/`)               | Falta script de definición de tablas   |
 | Sin `event/` y sin `client/`                             | Microservicio no integrado al ecosistema|
 | `@Autowired` en campos (no constructor injection)        | Inyección no recomendada               |
 

@@ -47,13 +47,15 @@ const SPRING_PACKAGES = [
      { pkg: "service", accent: "text-emerald-400", bg: "bg-emerald-500/8 border-emerald-500/20", desc: "Lógica de negocio. Interfaz obligatoria + sub-paquete impl/ con @Service.", suffix: "Interfaz + impl/Impl", example: "ClientService (interfaz), impl/ClientServiceImpl" },
      { pkg: "repository", accent: "text-violet-400", bg: "bg-violet-500/8 border-violet-500/20", desc: "Acceso a datos. Extiende JpaRepository o CrudRepository.", suffix: "Sufijo Repository", example: "ClientRepository" },
      { pkg: "model", accent: "text-indigo-400", bg: "bg-indigo-500/8 border-indigo-500/20", desc: "Entidades JPA. Mapea cada tabla de SQL Server con @Entity.", suffix: "", example: "Client, Product" },
-     { pkg: "dto", accent: "text-pink-400", bg: "bg-pink-500/8 border-pink-500/20", desc: "Objetos de transferencia. Separa la entidad de la respuesta/request del API.", suffix: "Sufijo Dto o Request/Response", example: "ClientDto, ClientRequest" },
+     { pkg: "dto", accent: "text-pink-400", bg: "bg-pink-500/8 border-pink-500/20", desc: "Objetos de transferencia. Si hay muchas entidades, subcarpeta por entidad (dto/client/, dto/product/).", suffix: "Sufijo Dto o Request/Response", example: "dto/client/ClientDto.java" },
      { pkg: "exception", accent: "text-red-400", bg: "bg-red-500/8 border-red-500/20", desc: "Manejo global de errores con @RestControllerAdvice y excepciones custom.", suffix: "", example: "GlobalExceptionHandler, ResourceNotFoundException" },
      { pkg: "config", accent: "text-yellow-400", bg: "bg-yellow-500/8 border-yellow-500/20", desc: "Configuraciones de Spring (@Configuration). CORS, Security, Beans.", suffix: "Sufijo Config", example: "CorsConfig, SecurityConfig" },
      { pkg: "util", accent: "text-green-400", bg: "bg-green-500/8 border-green-500/20", desc: "Clases utilitarias sin estado. Constantes, validadores, helpers.", suffix: "", example: "DateUtil, Constants" },
 ];
 
 const SPRING_STRUCTURE = `mi-proyecto/                    ← nombre del proyecto en kebab-case
+├── database/                      ← FUERA de src/, junto a pom.xml
+│   └── schema.sql                 ← script de tablas (ver 05_BASE_DATOS.md)
 ├── src/
 │   ├── main/
 │   │   ├── java/
@@ -62,7 +64,7 @@ const SPRING_STRUCTURE = `mi-proyecto/                    ← nombre del proyect
 │   │   │           └── vallegrande/
 │   │   │               └── vg-ms-{}/
 │   │   │                   ├── config/
-│   │   │                   │   └── CorsConfig.java
+│   │   │                   │   └── CorsConfig.java     ← DatabaseConfig.java opcional aquí
 │   │   │                   ├── rest/
 │   │   │                   │   └── ClientRest.java
 │   │   │                   ├── service/
@@ -73,8 +75,14 @@ const SPRING_STRUCTURE = `mi-proyecto/                    ← nombre del proyect
 │   │   │                   │   └── ClientRepository.java
 │   │   │                   ├── model/
 │   │   │                   │   └── Client.java
-│   │   │                   ├── dto/
-│   │   │                   │   └── ClientDto.java
+│   │   │                   ├── dto/                       ← pocos DTOs: van sueltos aquí
+│   │   │                   │   ├── client/                ← muchos DTOs: subcarpeta por entidad
+│   │   │                   │   │   ├── ClientDto.java
+│   │   │                   │   │   ├── ClientRequest.java
+│   │   │                   │   │   └── ClientResponse.java
+│   │   │                   │   └── product/
+│   │   │                   │       ├── ProductDto.java
+│   │   │                   │       └── ProductResponse.java
 │   │   │                   ├── exception/
 │   │   │                   │   └── GlobalExceptionHandler.java
 │   │   │                   └── VGMS{}Application.java
@@ -795,6 +803,12 @@ export default function Semester3() {
                          </div>
                          <FileTree content={SPRING_STRUCTURE} accentColor="emerald" />
                     </div>
+
+                    <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3">
+                         <p className="text-slate-400 text-xs leading-relaxed">
+                              <span className="text-emerald-400 font-semibold">¿Y la carpeta <code className="text-slate-300 bg-slate-800 px-1 py-0.5 rounded">database</code>?</span> Existe, pero **fuera de <code className="text-slate-300 bg-slate-800 px-1 py-0.5 rounded">src/</code>**, a nivel raíz del proyecto (junto a <code className="text-slate-300 bg-slate-800 px-1 py-0.5 rounded">pom.xml</code>) — no es un paquete Java, solo guarda <code className="text-slate-300 bg-slate-800 px-1 py-0.5 rounded">schema.sql</code> como referencia/documentación. La conexión real la arma Spring solo con el <code className="text-slate-300 bg-slate-800 px-1 py-0.5 rounded">datasource</code> de <code className="text-slate-300 bg-slate-800 px-1 py-0.5 rounded">application.yaml</code> (a diferencia de Semestre II, donde sí hay que crear <code className="text-slate-300 bg-slate-800 px-1 py-0.5 rounded">db/AccessDB.java</code> a mano). Si alguna vez necesitas configuración custom (ej. múltiples datasources), va en <code className="text-slate-300 bg-slate-800 px-1 py-0.5 rounded">config/DatabaseConfig.java</code> — opcional, no obligatorio.
+                         </p>
+                    </div>
                </motion.div>
 
                <motion.div custom={4.5} variants={fadeUp} initial="hidden" animate="show">
@@ -833,7 +847,7 @@ export default function Semester3() {
                                    <span className="w-3 h-3 rounded-full bg-yellow-500/60" />
                                    <span className="w-3 h-3 rounded-full bg-green-500/60" />
                               </div>
-                              <span className="text-slate-500 text-xs font-mono ml-2">src/main/resources/schema.sql</span>
+                              <span className="text-slate-500 text-xs font-mono ml-2">database/schema.sql</span>
                          </div>
                          <pre className="text-xs font-mono leading-relaxed p-5 overflow-x-auto text-slate-300 whitespace-pre">{ENTITY_SQLSERVER_TABLE}</pre>
                     </div>

@@ -210,6 +210,8 @@ CREATE UNIQUE INDEX uq_users_email ON users(email);
 
 ## 3. Configuración por Motor (application.yaml)
 
+**Opcional — `config/DatabaseConfig.java`:** en la mayoría de proyectos NO hace falta ninguna clase de configuración de base de datos; el `datasource`/`r2dbc` del `application.yaml` es suficiente y Spring arma el pool solo. Una clase `DatabaseConfig` en `config/` (con `@Configuration`) solo se crea si el proyecto necesita algo no cubierto por el YAML — por ejemplo, múltiples datasources o un `ConnectionFactory` custom. Es opcional, **no obligatoria**.
+
 ### MySQL (Semestre II — Spring Boot si aplica)
 
 ```yaml
@@ -256,6 +258,7 @@ spring:
   sql:
     init:
       mode: always
+      schema-locations: file:database/schema.sql
 server:
   port: 8080
 ```
@@ -282,7 +285,8 @@ spring:
     password: ${DB_PASSWORD}
   sql:
     init:
-      mode: always      # ejecuta schema.sql al iniciar
+      mode: always
+      schema-locations: file:database/schema.sql   # fuera de src/, ejecutado al iniciar
 server:
   port: 8080
 ```
@@ -384,12 +388,30 @@ public class Client {
 
 ### Convención de nombres
 
-Cada proyecto mantiene un único script `schema.sql` en `src/main/resources/` (Java) o en la raíz del proyecto (Python) con la definición completa de tablas e índices.
+Cada proyecto mantiene un único script `schema.sql` dentro de una carpeta `database/` en la **raíz del proyecto** — fuera de `src/`, junto a `pom.xml`/`README.md`. No es un paquete Java: es documentación ejecutable, el script de referencia para crear las tablas manualmente (SQL Server, MySQL, Oracle) o el que Spring ejecuta al iniciar cuando no hay ORM con auto-DDL (R2DBC).
 
 ```
-src/main/resources/
-└── schema.sql
+vg-ms-{nombre}/
+├── database/
+│   └── schema.sql
+├── src/
+│   └── ...
+└── pom.xml
 ```
+
+**Java + JPA (Semestre III):** Hibernate ya crea/actualiza el schema con `ddl-auto: update` — `database/schema.sql` es solo referencia manual, no se ejecuta automáticamente.
+
+**Java + R2DBC (Semestre IV/V·VI):** no hay auto-DDL, así que Spring **sí** debe ejecutar el script al iniciar. Como vive fuera de `src/` (no está en el classpath), hay que apuntarlo explícitamente:
+
+```yaml
+spring:
+  sql:
+    init:
+      mode: always
+      schema-locations: file:database/schema.sql
+```
+
+**Python (Flask):** mismo criterio — `database/schema.sql` en la raíz, ejecutado manualmente o desde `settings.py` al iniciar la app.
 
 ### Ejemplo de script
 
@@ -515,6 +537,6 @@ class Client(db.Model):
 - [ ] Borrado lógico (`status = 'I'`), no `DELETE` físico
 - [ ] Credenciales en variables de entorno, no hardcodeadas
 - [ ] Índices en columnas de búsqueda frecuente
-- [ ] Script `schema.sql` en `resources/` con la definición de tablas e índices
+- [ ] Script `schema.sql` en carpeta `database/` (raíz del proyecto, fuera de `src/`) con la definición de tablas e índices
 - [ ] `@Entity` + JPA ausente en proyectos WebFlux
 - [ ] `@Table` de Spring Data (no JPA) en proyectos R2DBC
