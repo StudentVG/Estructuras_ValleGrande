@@ -83,6 +83,8 @@ const SPRING_STRUCTURE = `mi-proyecto/                    ← nombre del proyect
 │   │   │                   │   └── product/
 │   │   │                   │       ├── ProductDto.java
 │   │   │                   │       └── ProductResponse.java
+│   │   │                   ├── util/
+│   │   │                   │   └── DateUtil.java
 │   │   │                   ├── exception/
 │   │   │                   │   └── GlobalExceptionHandler.java
 │   │   │                   └── VGMS{}Application.java

@@ -61,17 +61,21 @@ const WEBFLUX_PACKAGES = [
      { pkg: "repository", accent: "text-violet-400", bg: "bg-violet-500/8 border-violet-500/20", desc: "Extiende ReactiveCrudRepository (Oracle) o ReactiveMongoRepository (MongoDB). No JpaRepository.", example: "ClientRepository" },
      { pkg: "model", accent: "text-indigo-400", bg: "bg-indigo-500/8 border-indigo-500/20", desc: "Oracle: @Table + @Id — MongoDB: @Document + @Id. Nunca @Entity de JPA.", example: "Client, Product" },
      { pkg: "dto", accent: "text-pink-400", bg: "bg-pink-500/8 border-pink-500/20", desc: "Request/Response separados de la entidad. Usados en los métodos del Rest.", example: "ClientDto, ClientRequest" },
+     { pkg: "util", accent: "text-green-400", bg: "bg-green-500/8 border-green-500/20", desc: "Clases utilitarias sin estado. Constantes, validadores, helpers.", example: "DateUtil, Constants" },
      { pkg: "exception", accent: "text-red-400", bg: "bg-red-500/8 border-red-500/20", desc: "Manejo global con @ControllerAdvice. Excepciones personalizadas.", example: "GlobalExceptionHandler, NotFoundException" },
      { pkg: "config", accent: "text-yellow-400", bg: "bg-yellow-500/8 border-yellow-500/20", desc: "CORS, Security, Beans de configuración (@Configuration).", example: "CorsConfig, SecurityConfig" },
 ];
 
 const WEBFLUX_STRUCTURE_ORACLE = `vg-ms-{nombre}/
+├── database/                                       ← FUERA de src/
+│   └── schema.sql                                  ← ver 05_BASE_DATOS.md sección 5
 ├── src/
 │   ├── main/
 │   │   ├── java/
 │   │   │   └── pe/edu/vallegrande/vg_ms_{}/
 │   │   │       ├── config/
-│   │   │       │   └── CorsConfig.java
+│   │   │       │   ├── CorsConfig.java
+│   │   │       │   └── DatabaseConfig.java         ← OPCIONAL, solo si hay config custom
 │   │   │       ├── rest/                          ← sufijo Rest (no Controller)
 │   │   │       │   └── ClientRest.java
 │   │   │       ├── service/
@@ -84,6 +88,8 @@ const WEBFLUX_STRUCTURE_ORACLE = `vg-ms-{nombre}/
 │   │   │       │   └── Client.java                ← @Table, Long id, no @Entity
 │   │   │       ├── dto/
 │   │   │       │   └── ClientDto.java
+│   │   │       ├── util/
+│   │   │       │   └── DateUtil.java
 │   │   │       ├── exception/
 │   │   │       │   └── GlobalExceptionHandler.java
 │   │   │       └── VGMSApplication.java
@@ -111,6 +117,8 @@ const WEBFLUX_STRUCTURE_MONGO = `vg-ms-{nombre}/
 │   │   │       │   └── Client.java                ← @Document, ObjectId, no @Entity
 │   │   │       ├── dto/
 │   │   │       │   └── ClientDto.java
+│   │   │       ├── util/
+│   │   │       │   └── DateUtil.java
 │   │   │       ├── exception/
 │   │   │       │   └── GlobalExceptionHandler.java
 │   │   │       └── VGMSApplication.java

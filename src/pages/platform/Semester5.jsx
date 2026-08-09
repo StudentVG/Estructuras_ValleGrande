@@ -469,6 +469,7 @@ const BE_PACKAGES = {
           { pkg: "model/", accent: "text-indigo-400", bg: "bg-indigo-500/8 border-indigo-500/20", role: "Entidades @Table (R2DBC PostgreSQL). Enum de roles. Campos de auditoría (createdAt)." },
           { pkg: "dto/", accent: "text-pink-400", bg: "bg-pink-500/8 border-pink-500/20", role: "Request/Response DTOs con validaciones @NotBlank, @Email. Sin campos sensibles." },
           { pkg: "mapper/", accent: "text-lime-400", bg: "bg-lime-500/8 border-lime-500/20", role: "Conversión Entity ↔ DTO. Métodos estáticos toEntity(), toResponse()." },
+          { pkg: "util/", accent: "text-green-400", bg: "bg-green-500/8 border-green-500/20", role: "Clases utilitarias sin estado. Constantes, validadores, helpers. Puede estar vacío." },
           { pkg: "exception/", accent: "text-red-400", bg: "bg-red-500/8 border-red-500/20", role: "@ControllerAdvice + excepciones custom: NotFoundException, ForbiddenOrgException." },
           { pkg: "event/", accent: "text-orange-400", bg: "bg-orange-500/8 border-orange-500/20", role: "Publishers Kafka/Rabbit, Listeners, records de evento, serialización JSON." },
           { pkg: "client/", accent: "text-cyan-400", bg: "bg-cyan-500/8 border-cyan-500/20", role: "WebClient calls a otros ms (vg-ms-orgs, vg-ms-auth). Clases *ServiceClient." },
@@ -508,8 +509,11 @@ const BE_PACKAGES = {
 
 const BE_STRUCTURES = {
      layered: `📦 vg-ms-users/
+├── 📂 database/                ← FUERA de src/ (ver 05_BASE_DATOS.md)
+│   └── 📄 schema.sql
 ├── 📂 src/main/java/pe/edu/vallegrande/users/
 │   ├── 📂 config/              ← CorsConfig, SecurityConfig, WebClient, Kafka
+│   │   └── DatabaseConfig.java ← OPCIONAL, solo si hay config custom
 │   ├── 📂 security/            ← JwtAuthFilter, RoleConstants
 │   ├── 📂 rest/                ← @RestController endpoints
 │   ├── 📂 service/             ← interfaces de negocio
@@ -517,6 +521,7 @@ const BE_STRUCTURES = {
 │   ├── 📂 repository/          ← ReactiveCrudRepository + @Query
 │   ├── 📂 model/               ← @Table entities + enums (Role, Status)
 │   ├── 📂 dto/                 ← Request, Response, Mapper
+│   ├── 📂 util/                ← clases utilitarias sin estado (puede estar vacío)
 │   ├── 📂 exception/           ← @ControllerAdvice + custom exceptions
 │   ├── 📂 event/               ← Kafka events (publish + listen)
 │   ├── 📂 client/              ← WebClient → otros microservicios

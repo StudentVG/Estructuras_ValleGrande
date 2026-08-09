@@ -275,6 +275,9 @@ vg-ms-{nombre}/
 │   │   │       ├── dto/                               ← OBLIGATORIO (muchas entidades: subcarpeta por entidad)
 │   │   │       │   └── {Entidad}Dto.java              ← sufijo: Dto
 │   │   │       │
+│   │   │       ├── util/                              ← OBLIGATORIO (puede estar vacío)
+│   │   │       │   └── DateUtil.java                  ← clases sin estado: constantes, validadores, helpers
+│   │   │       │
 │   │   │       ├── exception/                         ← OBLIGATORIO
 │   │   │       │   ├── GlobalExceptionHandler.java    ← OBLIGATORIO, exactamente este nombre
 │   │   │       │   └── ResourceNotFoundException.java ← excepción custom
@@ -512,13 +515,17 @@ export interface Client {
 ```
 vg-ms-{nombre}/
 │
+├── database/                                      ← OBLIGATORIO, FUERA de src/
+│   └── schema.sql                                 ← ver 05_BASE_DATOS.md sección 5
+│
 ├── src/
 │   ├── main/
 │   │   ├── java/
 │   │   │   └── pe/edu/vallegrande/vg_ms_{nombre}/
 │   │   │       │
 │   │   │       ├── config/
-│   │   │       │   └── CorsConfig.java            ← OBLIGATORIO
+│   │   │       │   ├── CorsConfig.java            ← OBLIGATORIO
+│   │   │       │   └── DatabaseConfig.java        ← OPCIONAL, solo si hay config custom de datasource
 │   │   │       │
 │   │   │       ├── rest/                          ← OBLIGATORIO (NO controller/)
 │   │   │       │   └── {Entidad}Rest.java         ← sufijo: Rest
@@ -536,6 +543,9 @@ vg-ms-{nombre}/
 │   │   │       │                                  ← NUNCA @Entity aquí
 │   │   │       ├── dto/                            ← muchas entidades: subcarpeta por entidad
 │   │   │       │   └── {Entidad}Dto.java
+│   │   │       │
+│   │   │       ├── util/                           ← OBLIGATORIO (puede estar vacío)
+│   │   │       │   └── DateUtil.java
 │   │   │       │
 │   │   │       ├── exception/
 │   │   │       │   └── GlobalExceptionHandler.java
@@ -899,6 +909,9 @@ vg-ms-{nombre}-be/
 ```
 vg-ms-{nombre}/
 │
+├── database/                      ← OBLIGATORIO, FUERA de src/
+│   └── schema.sql                 ← ver 05_BASE_DATOS.md sección 5
+│
 ├── src/main/java/pe/edu/vallegrande/{nombre}/
 │   │
 │   ├── config/                    ← CORS, Security, WebClient, RabbitMQ/Kafka beans
@@ -906,7 +919,8 @@ vg-ms-{nombre}/
 │   │   ├── SecurityConfig.java    ← @EnableWebFluxSecurity
 │   │   ├── RabbitMQConfig.java    ← (si usa Rabbit)
 │   │   ├── KafkaConfig.java       ← (si usa Kafka)
-│   │   └── WebClientConfig.java   ← WebClient.Builder bean
+│   │   ├── WebClientConfig.java   ← WebClient.Builder bean
+│   │   └── DatabaseConfig.java    ← OPCIONAL, solo si hay config custom de datasource
 │   │
 │   ├── security/
 │   │   ├── JwtAuthenticationFilter.java  ← WebFilter que valida JWT
@@ -933,6 +947,9 @@ vg-ms-{nombre}/
 │   ├── mapper/                    ← conversión Entity ↔ DTO
 │   │   └── {Entidad}Mapper.java
 │   │
+│   ├── util/                      ← OBLIGATORIO (puede estar vacío)
+│   │   └── DateUtil.java
+│   │
 │   ├── exception/
 │   │   ├── GlobalExceptionHandler.java
 │   │   ├── ResourceNotFoundException.java
@@ -947,8 +964,7 @@ vg-ms-{nombre}/
 │       └── {Servicio}ServiceClient.java
 │
 ├── src/main/resources/
-│   ├── application.yaml
-│   └── schema.sql                 ← definición de tablas e índices
+│   └── application.yaml
 │
 └── pom.xml
 ```
