@@ -51,6 +51,7 @@ const SPRING_PACKAGES = [
      { pkg: "exception", accent: "text-red-400", bg: "bg-red-500/8 border-red-500/20", desc: "Manejo global de errores con @RestControllerAdvice y excepciones custom.", suffix: "", example: "GlobalExceptionHandler, ResourceNotFoundException" },
      { pkg: "config", accent: "text-yellow-400", bg: "bg-yellow-500/8 border-yellow-500/20", desc: "Configuraciones de Spring (@Configuration). CORS, Security, Beans.", suffix: "Sufijo Config", example: "CorsConfig, SecurityConfig" },
      { pkg: "util", accent: "text-green-400", bg: "bg-green-500/8 border-green-500/20", desc: "Clases utilitarias sin estado. Constantes, validadores, helpers.", suffix: "", example: "DateUtil, Constants" },
+     { pkg: "security", accent: "text-amber-400", bg: "bg-amber-500/8 border-amber-500/20", desc: "Solo si el proyecto tiene login con JWT. SecurityConfig va en config/, no aquí.", suffix: "Condicional", example: "JwtUtil, JwtAuthenticationFilter" },
 ];
 
 const SPRING_STRUCTURE = `mi-proyecto/                    ← nombre del proyecto en kebab-case
@@ -64,7 +65,11 @@ const SPRING_STRUCTURE = `mi-proyecto/                    ← nombre del proyect
 │   │   │           └── vallegrande/
 │   │   │               └── vg-ms-{}/
 │   │   │                   ├── config/
-│   │   │                   │   └── CorsConfig.java     ← DatabaseConfig.java opcional aquí
+│   │   │                   │   ├── CorsConfig.java
+│   │   │                   │   └── SecurityConfig.java  ← si hay autenticación
+│   │   │                   ├── security/               ← CONDICIONAL: solo con JWT
+│   │   │                   │   ├── JwtUtil.java
+│   │   │                   │   └── JwtAuthenticationFilter.java
 │   │   │                   ├── rest/
 │   │   │                   │   └── ClientRest.java
 │   │   │                   ├── service/

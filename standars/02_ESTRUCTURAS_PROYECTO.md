@@ -256,7 +256,12 @@ vg-ms-{nombre}/
 │   │   │       │
 │   │   │       ├── config/                            ← OBLIGATORIO
 │   │   │       │   ├── CorsConfig.java                ← OBLIGATORIO, exactamente este nombre
+│   │   │       │   ├── SecurityConfig.java             ← CONDICIONAL, solo si hay autenticación
 │   │   │       │   └── DatabaseConfig.java             ← OPCIONAL, solo si hay config custom de datasource
+│   │   │       │
+│   │   │       ├── security/                          ← CONDICIONAL, solo si hay autenticación JWT
+│   │   │       │   ├── JwtUtil.java                   ← generar y validar tokens
+│   │   │       │   └── JwtAuthenticationFilter.java   ← OncePerRequestFilter (MVC, no WebFilter)
 │   │   │       │
 │   │   │       ├── rest/                              ← OBLIGATORIO (NO "controller/")
 │   │   │       │   └── {Entidad}Rest.java             ← sufijo obligatorio: Rest
@@ -294,6 +299,10 @@ vg-ms-{nombre}/
 │
 └── pom.xml                                            ← OBLIGATORIO
 ```
+
+> **Sobre el paquete `security/`:** es **condicional**, no obligatorio. Un CRUD sin autenticación no lo lleva — crear la carpeta vacía es ruido. Solo aparece cuando el proyecto implementa login con JWT, y entonces contiene `JwtUtil` (generar/validar tokens) y `JwtAuthenticationFilter`. La clase `SecurityConfig` **no** va aquí: por convención de Spring vive en `config/` junto al resto de `@Configuration`. Ver `07_SEGURIDAD.md` sección 5 para el código completo.
+>
+> En Spring Boot **MVC** (este semestre) el filtro extiende `OncePerRequestFilter`. `WebFilter` es de WebFlux y solo aplica desde Semestre IV.
 
 ### Contenido esperado en clases clave
 
@@ -400,6 +409,9 @@ server:
 | `groupId` diferente de `pe.edu.vallegrande`         | Metadatos del proyecto incorrectos    |
 | Credenciales hardcodeadas en YAML                   | Violación de seguridad crítica        |
 | Sin `CorsConfig.java`                               | CORS no configurado                   |
+| `SecurityConfig.java` dentro de `security/` en vez de `config/` | Ubicación incorrecta por convención Spring |
+| Lógica JWT (`JwtUtil`, filtros) suelta en `util/` o `config/` en vez de `security/` | Falta separación de responsabilidades |
+| Carpeta `security/` vacía en un proyecto sin autenticación | Paquete innecesario |
 | Sin `GlobalExceptionHandler.java`                   | Sin manejo de errores global          |
 
 ---
