@@ -600,7 +600,7 @@ const BE_SNIPPETS = {
 @Table("users")                        // tabla: snake_case, plural, inglés
 @Data @NoArgsConstructor @AllArgsConstructor
 public class User {
-    @Id private Long id;                // PK: siempre "id"
+    @Id private Long id;                // PK: siempre "id" (SERIAL + Integer también es válido)
     @Column("full_name") private String fullName;  // snake_case ↔ camelCase
     private String email;
     @Column("org_id") private String orgId;         // FK: {tabla_singular}_id

@@ -74,7 +74,7 @@ public class Client {            // clase: PascalCase, singular
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;             // columna: id
+    private Long id;             // columna: id (Integer + INT también es válido, ver Base de Datos)
 
     @Column(name = "first_name") // columna: snake_case
     private String firstName;    // campo Java: camelCase

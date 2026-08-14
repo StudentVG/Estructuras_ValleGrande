@@ -191,7 +191,7 @@ CREATE TABLE clients (
 
 const ENTITY_MYSQL_JAVA = `// model/Client.java — clase de dominio (POJO)
 public class Client {
-    private Long id;
+    private Integer id;           // INT en la tabla ↔ Integer en Java (BIGINT ↔ Long también es válido)
     private String fullName;      // campo Java: camelCase
     private String email;
     private String status;        // único campo del ciclo de vida: 'A' activo / 'I' inactivo
@@ -211,7 +211,7 @@ public class ClientDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Client c = new Client();
-                    c.setId(rs.getLong("id"));
+                    c.setId(rs.getInt("id"));
                     c.setFullName(rs.getString("full_name"));   // snake_case → camelCase
                     c.setEmail(rs.getString("email"));
                     c.setStatus(rs.getString("status"));

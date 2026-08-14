@@ -176,7 +176,7 @@ const WEBFLUX_SNIPPET_ORACLE = `// model/Client.java
 @Table("clients")                       // tabla: snake_case, plural, inglés
 public class Client {
     @Id
-    private Long id;                    // PK: siempre "id"
+    private Long id;                    // PK: siempre "id" (NUMBER(10) + Integer también es válido)
 
     @Column("full_name")
     private String fullName;            // columna snake_case ↔ campo Java camelCase

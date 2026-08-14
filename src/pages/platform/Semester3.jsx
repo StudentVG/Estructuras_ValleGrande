@@ -182,7 +182,7 @@ public class Client {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;                  // PK: siempre "id"
+    private Long id;                  // PK: siempre "id" (Integer + INT también es válido, ver 05_BASE_DATOS.md)
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;          // columna snake_case ↔ campo Java camelCase

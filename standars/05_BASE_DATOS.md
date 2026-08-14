@@ -74,14 +74,16 @@ Glosario de términos de dominio frecuentes (español → inglés) para no tradu
 
 ### 2.3 Primary Keys
 
-| Semestre | Motor       | Tipo recomendado      | Autoincremento                              |
-| -------- | ----------- | --------------------- | ------------------------------------------- |
-| II       | MySQL       | `INT` / `BIGINT`      | `AUTO_INCREMENT`                            |
-| III      | SQL Server  | `BIGINT`              | `IDENTITY(1,1)`                             |
-| IV       | Oracle      | `NUMBER(19)`          | Sequence + Trigger ó `GENERATED ALWAYS AS IDENTITY` |
-| IV       | MongoDB     | `ObjectId`            | Automático (`_id`)                          |
-| IV       | SQLite      | `INTEGER`             | `AUTOINCREMENT`                             |
-| V·VI     | PostgreSQL  | `BIGINT` / `BIGSERIAL`| `GENERATED ALWAYS AS IDENTITY` ó `SERIAL`  |
+| Semestre | Motor       | Tipo válido            | Autoincremento                              |
+| -------- | ----------- | ------------------------ | ------------------------------------------- |
+| II       | MySQL       | `INT` / `BIGINT`         | `AUTO_INCREMENT`                            |
+| III      | SQL Server  | `INT` / `BIGINT`         | `IDENTITY(1,1)`                             |
+| IV       | Oracle      | `NUMBER(10)` / `NUMBER(19)` | Sequence + Trigger ó `GENERATED ALWAYS AS IDENTITY` |
+| IV       | MongoDB     | `ObjectId`               | Automático (`_id`)                          |
+| IV       | SQLite      | `INTEGER`                | `AUTOINCREMENT`                             |
+| V·VI     | PostgreSQL  | `INT` / `BIGINT` / `SERIAL` / `BIGSERIAL` | `GENERATED ALWAYS AS IDENTITY` ó `SERIAL`  |
+
+**Regla:** `INT`/`Integer` y `BIGINT`/`Long` son **ambos válidos** en cualquier semestre — no hay una talla obligatoria. `INT` alcanza para ~2 mil millones de registros (suficiente en la práctica); `BIGINT` es la opción "a prueba de futuro" si se espera un volumen mucho mayor. Lo único que importa es la **consistencia**: el tipo de la columna SQL debe coincidir con el tipo del campo Java (`INT` ↔ `Integer`, `BIGINT` ↔ `Long`) — no mezclar `INT` en la tabla con `Long` en la entidad.
 
 **Regla:** La columna de clave primaria siempre se llama `id` (no `cliente_id`, no `cod_usuario`).
 
@@ -297,6 +299,8 @@ server:
 
 ## 4. Entidades Java por Motor
 
+**Nota — `Long` vs `Integer`:** los ejemplos de esta sección usan `Long`/`BIGINT` a modo ilustrativo, pero `Integer`/`INT` es igual de válido (ver 2.3). El bot **no debe** marcar como error usar `Integer` en vez de `Long`, siempre que la columna SQL sea `INT` (consistente) y no `BIGINT`.
+
 ### Spring Data JPA — SQL Server (Semestre III)
 
 ```java
@@ -309,7 +313,7 @@ server:
 public class Client {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id;   // Integer + INT también es válido — ver nota arriba
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
